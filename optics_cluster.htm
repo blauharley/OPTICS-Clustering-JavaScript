@@ -12,14 +12,41 @@
 
     var clusteringAlgo = new OPTICSClustering(birth_and_death_rate);
 
-    clusteringAlgo.start(2.5,2); // epsilon,minPts
-
+    document.getElementById('clusterButton').onclick = function(event){
+      
+      var epsilon = document.getElementById('epsilon').value;
+      var minPts = document.getElementById('minPts').value;
+      
+      var output = clusteringAlgo.start(epsilon,minPts);
+      console.log(output);
+      
+      document.getElementById('output').value = output;
+      
+    };
+    
   };
 
 </script>
 </head>
 
 <body>
-
+<h2>Dataset: Birth and Deathrate of countries</h2>
+<table>
+  <form>
+    <tr>
+      <td>Epsilon (Area of Core-Point) |</td>
+      <td>MinPts (Minimal Number of neighboring Points)</td>
+    </tr>
+    
+    <tr>
+      <td><input type="text" id="epsilon" placeholder="epsilon" /></td>
+      <td><input type="text" id="minPts" placeholder="minPts" /></td>
+    </tr>
+    
+    <tr><td><input type="button" id="clusterButton" value="calculate"/></td></tr>
+    <tr><td><textarea id="output" placeholder="output" readonly="readonly"></textarea></td></tr>
+    
+  </form>
+</table>
 </body>
 </html>

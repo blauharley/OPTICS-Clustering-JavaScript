@@ -87,8 +87,10 @@ function OPTICSClustering(dataset){
   
   this.start = function(epsilon, minPts){ // actual clustering-algo
     
-    sorted_list = [];
+    init(dataset);
     
+    sorted_list = [];
+  
     unsorted_list.forEach(function(point,index){
       
       if( !point.processed ){
@@ -206,7 +208,7 @@ function OPTICSClustering(dataset){
     return min_distance;
   };
   
-  (function(dataset){
+  var init = function(dataset){
     
     if(dataset.constructor !== Array){
       console.log('dataset must be of type array: ', typeof dataset, dataset);
@@ -222,5 +224,5 @@ function OPTICSClustering(dataset){
       unsorted_list.push(point);
     }
     
-  })(dataset);
+  };
 }
