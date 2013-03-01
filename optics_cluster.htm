@@ -19,8 +19,7 @@
       
       var output = clusteringAlgo.start(epsilon,minPts);
       console.log(output);
-      
-      document.getElementById('output').value = output;
+      clusteringAlgo.getVisualization(output);
       
     };
     
@@ -44,7 +43,6 @@
     </tr>
     
     <tr><td><input type="button" id="clusterButton" value="calculate"/></td></tr>
-    <tr><td><textarea id="output" placeholder="output" readonly="readonly"></textarea></td></tr>
     
   </form>
 </table>

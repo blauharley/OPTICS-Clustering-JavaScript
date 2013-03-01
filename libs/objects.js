@@ -133,6 +133,58 @@ function OPTICSClustering(dataset){
     
   };
   
+  // dataset should lok like this: [ { id: 'identifier', x: Number, y: Number... }, {...} ]
+  this.getVisualization = function(dataset, scale){
+  
+    var output = document.createElement('canvas');
+    
+    output.height = '1000';
+    output.width = '1000';//dataset.length * 5;
+    
+    var ctx = output.getContext ('2d');
+
+    ctx.fillStyle = '#C3C3C3';
+    //ctx.fillRect ( 0 , 0 , output.width, output.height );
+    ctx.fill();
+
+    ctx.beginPath ();
+    ctx.fillStyle = '#0000ff';
+    ctx.strokeStyle = '#ffff00';
+    
+    ctx.font = '5pt Arial';
+    ctx.lineWidth = 8;
+    
+    var xStartPoint = 50,
+        yStartPoint = Number(output.height) - 60;
+    
+    dataset.forEach(function(point,index){
+      
+      ctx.moveTo(xStartPoint, yStartPoint);
+      
+      if(point.reachability_distance)
+        ctx.lineTo(xStartPoint, (yStartPoint - (point.reachability_distance * 10)) );
+      else
+        ctx.lineTo(xStartPoint, 0);
+      
+      
+      ctx.save();
+      ctx.translate(xStartPoint, (Number(output.height) - 5));
+      ctx.rotate( (Math.PI/180)*-90 );
+      ctx.fillText( point.id.toString(), 0, 3 );
+      ctx.restore();
+      
+      xStartPoint += 9;
+      
+    });
+    
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    
+    
+    document.body.appendChild(output);
+    
+  };
   
   // private methods
   
