@@ -9,7 +9,7 @@
 <script type="text/javascript">
 
   window.onload = function(){
-
+    console.log(birth_and_death_rate.length);
     var clusteringAlgo = new OPTICSClustering(birth_and_death_rate);
 
     document.getElementById('clusterButton').onclick = function(event){
@@ -19,7 +19,7 @@
       
       var output = clusteringAlgo.start(epsilon,minPts);
       console.log(output);
-      clusteringAlgo.getVisualization(output);
+      clusteringAlgo.getVisualization(output, epsilon, minPts);
       
     };
     

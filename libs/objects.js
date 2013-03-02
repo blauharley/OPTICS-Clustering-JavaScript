@@ -1,4 +1,15 @@
 ﻿
+// todo: one element is failing
+Array.prototype.safeInsert = function(ele){
+  var has_element = false;
+  for(var index=0; index < this.length; index++){
+    if(this[index].id === ele.id )
+      has_element = true;
+  }
+  if(!has_element)
+    this.push(ele);
+};
+
 // a point is a unspecified data of a data-set
 function Point(){
   this.processed = false;
@@ -15,16 +26,23 @@ function Queue(){
   
   this.remove = function(ele){
     
-    this.forEach(function(otherEle,index){
+    var length = _queue.length;
+    
+    for(var index=0; index < length; index++){
+      
+      var otherEle = _queue[index];
       
       if( ele.id === otherEle.id ){
+      
         var firstQueuePart = _queue.slice(0,index);
         var secondQueuePart = _queue.slice(index+1, _queue.length);
+        
         _queue = firstQueuePart.concat(secondQueuePart);
+        break;
       }
-      
-    });
-    return _queue;
+    }
+    
+    return this;
   };
  
   this.insert = function(ele){
@@ -75,7 +93,7 @@ function Queue(){
 
 
 // the optics clustering algo that combines the most important methods for processing data into clusters
-// dataset should lok like this: [ { id: 'identifier', x: Number, y: Number... }, {...} ]
+// dataset should lok like this: [ { id: 'identifier', a: Number, b: Number ... OR  x: Number, y: Number ... }, {...} ]
 function OPTICSClustering(dataset){
   
   var unsorted_list = [];
@@ -98,7 +116,7 @@ function OPTICSClustering(dataset){
         var neighbors = getNeighbors(point, epsilon);
         point.processed = true;
         
-        sorted_list.push(point);
+        sorted_list.safeInsert(point);
         
         priority_queue = new Queue();
         
@@ -110,12 +128,10 @@ function OPTICSClustering(dataset){
           for(var p = 0; p < priority_queue.getElements().length; p++){
             
             var queued_point = priority_queue.getElements()[p];
-            console.log( point );
-            console.log( priority_queue.getElements() );
             var neighbors = getNeighbors(queued_point, epsilon);
             queued_point.processed = true;
             
-            sorted_list.push(queued_point);
+            sorted_list.safeInsert(queued_point);
             
             //console.log('calculateCoreDistance',calculateCoreDistance(queued_point, epsilon, minPts));
             if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
@@ -133,9 +149,9 @@ function OPTICSClustering(dataset){
     
   };
   
-  // dataset should lok like this: [ { id: 'identifier', x: Number, y: Number... }, {...} ]
-  this.getVisualization = function(dataset, scale){
-  
+  // dataset should lok like this: [ { id: 'identifier', a: Number, b: Number ... OR  x: Number, y: Number ... }, {...} ]
+  this.getVisualization = function(dataset, epsilon, minPts){
+    
     var output = document.createElement('canvas');
     
     output.height = '1000';
@@ -154,7 +170,10 @@ function OPTICSClustering(dataset){
     ctx.font = '5pt Arial';
     ctx.lineWidth = 8;
     
-    var xStartPoint = 50,
+    ctx.fillText( ('Epsilon: ' + epsilon), 10,10 );
+    ctx.fillText( ('MinPts: ' + minPts), 10,25 );
+    
+    var xStartPoint = 120,
         yStartPoint = Number(output.height) - 60;
     
     dataset.forEach(function(point,index){
@@ -173,7 +192,7 @@ function OPTICSClustering(dataset){
       ctx.fillText( point.id.toString(), 0, 3 );
       ctx.restore();
       
-      xStartPoint += 9;
+      xStartPoint += 10;
       
     });
     
@@ -181,7 +200,7 @@ function OPTICSClustering(dataset){
     ctx.stroke();
     ctx.closePath();
     
-    
+    drawArrows(ctx, 115, yStartPoint, Number(output.width), Number(output.height), dataset.length, 100);
     document.body.appendChild(output);
     
   };
@@ -190,14 +209,14 @@ function OPTICSClustering(dataset){
   
   var dist = function(pointA, pointB){ // pytharoras
     
-    var multiplied_achses = [];
-    for(var achse in pointA){
-      if( !isNaN( Number(pointA[achse]) ) ) // achse must have got metric value
-        multiplied_achses.push( ((pointA[achse] - pointB[achse]) * (pointA[achse] - pointB[achse])) );
+    var multiplied_axises = [];
+    for(var axis in pointA){
+      if( !isNaN( Number(pointA[axis]) ) ) // axis must have got metric value
+        multiplied_axises.push( ((pointA[axis] - pointB[axis]) * (pointA[axis] - pointB[axis])) );
     }
     
     var sum = 0;
-    multiplied_achses.forEach(function(val,index){
+    multiplied_axises.forEach(function(val,index){
       sum += val;
     });
     
@@ -258,6 +277,48 @@ function OPTICSClustering(dataset){
       
     }
     return min_distance;
+  };
+  
+  var drawArrows = function(ctx, start_x, start_y, x_axis_width, y_axis_height, x_units, y_units){
+    
+    ctx.beginPath();
+    ctx.lineWidth = 3;
+    ctx.fillStyle = '#000000';
+    ctx.strokeStyle = '#000000';
+    
+    ctx.moveTo(start_x, start_y);
+    ctx.lineTo( start_x + x_axis_width, start_y);
+    
+    var nextPosX = start_x;
+    
+    for(var u=0; u < x_units; u++){
+      
+      ctx.moveTo(nextPosX, start_y + 5);
+      ctx.lineTo(nextPosX, start_y - 5 );
+      ctx.fillText( u.toString(), nextPosX-2, (start_y + 10));
+      
+      nextPosX = start_x + ((x_axis_width / x_units) * (u + 1));
+    }
+    
+    
+    ctx.moveTo(start_x, start_y);
+    ctx.lineTo(start_x, 0);
+    
+    var nextPosY = start_y;
+    
+    for(var u=0; u < y_units; u++){
+      
+      ctx.moveTo(start_x - 5, nextPosY);
+      ctx.lineTo(start_x + 5, nextPosY);
+      ctx.fillText( u.toString(), start_x-15, nextPosY );
+      
+      nextPosY = start_y - ((y_axis_height / y_units) * (u + 1));
+    }
+    
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    
   };
   
   var init = function(dataset){
