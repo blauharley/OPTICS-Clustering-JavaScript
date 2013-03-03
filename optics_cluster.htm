@@ -9,17 +9,18 @@
 <script type="text/javascript">
 
   window.onload = function(){
-    console.log(birth_and_death_rate.length);
-    var clusteringAlgo = new OPTICSClustering(birth_and_death_rate);
+    
+    var clusteringAlgo = new OPTICS(birth_and_death_rate);
 
     document.getElementById('clusterButton').onclick = function(event){
       
-      var epsilon = document.getElementById('epsilon').value;
-      var minPts = document.getElementById('minPts').value;
+      var epsilon = Number(document.getElementById('epsilon').value);
+      var minPts = Number(document.getElementById('minPts').value);
       
       var output = clusteringAlgo.start(epsilon,minPts);
       console.log(output);
-      clusteringAlgo.getVisualization(output, epsilon, minPts);
+      var img = clusteringAlgo.getVisualization(output, epsilon, minPts, 1000, 1000);
+      document.body.appendChild(img);
       
     };
     

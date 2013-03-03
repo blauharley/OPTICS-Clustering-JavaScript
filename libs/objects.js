@@ -1,15 +1,4 @@
 ﻿
-// todo: one element is failing
-Array.prototype.safeInsert = function(ele){
-  var has_element = false;
-  for(var index=0; index < this.length; index++){
-    if(this[index].id === ele.id )
-      has_element = true;
-  }
-  if(!has_element)
-    this.push(ele);
-};
-
 // a point is a unspecified data of a data-set
 function Point(){
   this.processed = false;
@@ -19,7 +8,7 @@ function Point(){
 }
 
 
-// priority queue that stores points according to their attributes, first element is the most important element
+// priority queue that stores points according to their attribute-values, first element is the most important element that must be handled next
 function Queue(){
   
   var _queue = [];
@@ -91,10 +80,9 @@ function Queue(){
   };
 }
 
-
 // the optics clustering algo that combines the most important methods for processing data into clusters
 // dataset should lok like this: [ { id: 'identifier', a: Number, b: Number ... OR  x: Number, y: Number ... }, {...} ]
-function OPTICSClustering(dataset){
+function OPTICS(dataset){
   
   var unsorted_list = [];
   var sorted_list = null;
@@ -103,7 +91,7 @@ function OPTICSClustering(dataset){
   
   // public methods
   
-  this.start = function(epsilon, minPts){ // actual clustering-algo
+  this.start = function(epsilon, minPts){ // actual OPTICS - clustering - Algo
     
     init(dataset);
     
@@ -112,32 +100,34 @@ function OPTICSClustering(dataset){
     unsorted_list.forEach(function(point,index){
       
       if( !point.processed ){
-      
+        
         var neighbors = getNeighbors(point, epsilon);
         point.processed = true;
         
-        sorted_list.safeInsert(point);
+        sorted_list.push(point);
         
         priority_queue = new Queue();
         
         if( calculateCoreDistance(point, epsilon, minPts) !== undefined ){
           
           updateQueue(neighbors, point, priority_queue, epsilon, minPts);
-          //console.log( priority_queue.getElements() );
           
           for(var p = 0; p < priority_queue.getElements().length; p++){
             
             var queued_point = priority_queue.getElements()[p];
-            var neighbors = getNeighbors(queued_point, epsilon);
-            queued_point.processed = true;
             
-            sorted_list.safeInsert(queued_point);
-            
-            //console.log('calculateCoreDistance',calculateCoreDistance(queued_point, epsilon, minPts));
-            if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
-              updateQueue(neighbors, queued_point, priority_queue, epsilon, minPts);
+            if( !queued_point.processed ){
+              
+              var neighbors = getNeighbors(queued_point, epsilon);
+              queued_point.processed = true;
+              
+              sorted_list.push(queued_point);
+              
+              if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
+                updateQueue(neighbors, queued_point, priority_queue, epsilon, minPts);
+              }
+              
             }
-            
           }
         }
         
@@ -150,12 +140,12 @@ function OPTICSClustering(dataset){
   };
   
   // dataset should lok like this: [ { id: 'identifier', a: Number, b: Number ... OR  x: Number, y: Number ... }, {...} ]
-  this.getVisualization = function(dataset, epsilon, minPts){
+  this.getVisualization = function(dataset, epsilon, minPts, width, height){
     
     var output = document.createElement('canvas');
     
-    output.height = '1000';
-    output.width = '1000';//dataset.length * 5;
+    output.height = height;
+    output.width = width;
     
     var ctx = output.getContext ('2d');
 
@@ -167,21 +157,27 @@ function OPTICSClustering(dataset){
     ctx.fillStyle = '#0000ff';
     ctx.strokeStyle = '#ffff00';
     
-    ctx.font = '5pt Arial';
+    ctx.font = '15pt Arial';
     ctx.lineWidth = 8;
     
-    ctx.fillText( ('Epsilon: ' + epsilon), 10,10 );
-    ctx.fillText( ('MinPts: ' + minPts), 10,25 );
+    ctx.save();
+    ctx.translate(90, 20);
+    ctx.rotate( (Math.PI/180)*90 );
+    ctx.fillText( ('Epsilon: ' + epsilon), 10,25 );
+    ctx.fillText( ('MinPts: ' + minPts), 10,50 );
+    ctx.restore();
+    
+    ctx.font = '6pt Arial';
     
     var xStartPoint = 120,
-        yStartPoint = Number(output.height) - 60;
+        yStartPoint = Number(output.height) - 80;
     
     dataset.forEach(function(point,index){
       
       ctx.moveTo(xStartPoint, yStartPoint);
       
       if(point.reachability_distance)
-        ctx.lineTo(xStartPoint, (yStartPoint - (point.reachability_distance * 10)) );
+        ctx.lineTo(xStartPoint, (yStartPoint - (point.reachability_distance * (output.height/100))) );
       else
         ctx.lineTo(xStartPoint, 0);
       
@@ -200,10 +196,16 @@ function OPTICSClustering(dataset){
     ctx.stroke();
     ctx.closePath();
     
-    drawArrows(ctx, 115, yStartPoint, Number(output.width), Number(output.height), dataset.length, 100);
-    document.body.appendChild(output);
+    drawArrows(ctx, 115, yStartPoint, Number(output.width), Number(output.height), 100, 100);
     
+    var visual = document.createElement('img');
+    visual.width = output.width;
+    visual.height = output.height;
+    visual.src = output.toDataURL();
+    
+    return visual;
   };
+  
   
   // private methods
   
@@ -211,7 +213,7 @@ function OPTICSClustering(dataset){
     
     var multiplied_axises = [];
     for(var axis in pointA){
-      if( !isNaN( Number(pointA[axis]) ) ) // axis must have got metric value
+      if( !isNaN( Number(pointA[axis]) ) ) // axis must have got metric value in order to be processed
         multiplied_axises.push( ((pointA[axis] - pointB[axis]) * (pointA[axis] - pointB[axis])) );
     }
     
@@ -231,8 +233,6 @@ function OPTICSClustering(dataset){
         neughbors.push(otherPoint);
       }
     });
-    //console.log('point', point);
-    //console.log('neughbors', neughbors);
     return neughbors;
     
   };
@@ -295,7 +295,7 @@ function OPTICSClustering(dataset){
       
       ctx.moveTo(nextPosX, start_y + 5);
       ctx.lineTo(nextPosX, start_y - 5 );
-      ctx.fillText( u.toString(), nextPosX-2, (start_y + 10));
+      ctx.fillText( u.toString(), nextPosX-3, (start_y + 10));
       
       nextPosX = start_x + ((x_axis_width / x_units) * (u + 1));
     }
