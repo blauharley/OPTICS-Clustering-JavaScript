@@ -13,13 +13,18 @@
     var clusteringAlgo = new OPTICS(birth_and_death_rate);
 
     document.getElementById('clusterButton').onclick = function(event){
-      
+        
       var epsilon = Number(document.getElementById('epsilon').value);
       var minPts = Number(document.getElementById('minPts').value);
       
       var output = clusteringAlgo.start(epsilon,minPts);
       console.log(output);
-      var img = clusteringAlgo.getVisualization(output, epsilon, minPts, 1000, 1000);
+      
+      
+      img = clusteringAlgo.draw2DPlot(output,1000,1000);
+      document.body.appendChild(img);
+      
+      img = clusteringAlgo.drawBarChartPlot(output, epsilon, minPts, 1000, 1000);
       document.body.appendChild(img);
       
     };

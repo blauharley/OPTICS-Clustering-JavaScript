@@ -4,7 +4,8 @@ function Point(){
   this.processed = false;
   this.reachability_distance = undefined;
   this.attribute = null;
-  this.id = null
+  this.id = null;
+  this.color = null
 }
 
 
@@ -89,6 +90,8 @@ function OPTICS(dataset){
   var priority_queue = null; 
   var core_distance = 0;
   
+  var tmp_color_color = null;
+  
   // public methods
   
   this.start = function(epsilon, minPts){ // actual OPTICS - clustering - Algo
@@ -96,7 +99,7 @@ function OPTICS(dataset){
     init(dataset);
     
     sorted_list = [];
-  
+        
     unsorted_list.forEach(function(point,index){
       
       if( !point.processed ){
@@ -104,6 +107,9 @@ function OPTICS(dataset){
         var neighbors = getNeighbors(point, epsilon);
         point.processed = true;
         
+        var cluster_color = getRandomColor();
+        point.color = cluster_color;
+          
         sorted_list.push(point);
         
         priority_queue = new Queue();
@@ -120,7 +126,8 @@ function OPTICS(dataset){
               
               var neighbors = getNeighbors(queued_point, epsilon);
               queued_point.processed = true;
-              
+              queued_point.color = cluster_color;
+          
               sorted_list.push(queued_point);
               
               if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
@@ -140,7 +147,7 @@ function OPTICS(dataset){
   };
   
   // dataset should lok like this: [ { id: 'identifier', a: Number, b: Number ... OR  x: Number, y: Number ... }, {...} ]
-  this.getVisualization = function(dataset, epsilon, minPts, width, height){
+  this.drawBarChartPlot = function(dataset, epsilon, minPts, width, height){
     
     var output = document.createElement('canvas');
     
@@ -174,7 +181,10 @@ function OPTICS(dataset){
     
     dataset.forEach(function(point,index){
       
+      ctx.beginPath ();
       ctx.moveTo(xStartPoint, yStartPoint);
+      console.log(point.color);
+      ctx.strokeStyle = point.color;
       
       if(point.reachability_distance)
         ctx.lineTo(xStartPoint, (yStartPoint - (point.reachability_distance * (output.height/100))) );
@@ -188,6 +198,9 @@ function OPTICS(dataset){
       ctx.fillText( point.id.toString(), 0, 3 );
       ctx.restore();
       
+      ctx.stroke();
+      ctx.closePath();
+      
       xStartPoint += 10;
       
     });
@@ -197,6 +210,45 @@ function OPTICS(dataset){
     ctx.closePath();
     
     drawArrows(ctx, 115, yStartPoint, Number(output.width), Number(output.height), 100, 100);
+    
+    var visual = document.createElement('img');
+    visual.width = output.width;
+    visual.height = output.height;
+    visual.src = output.toDataURL();
+    
+    return visual;
+  };
+  
+  this.draw2DPlot = function(dataset,width,height){
+    
+    var output = document.createElement('canvas');
+    
+    output.height = height;
+    output.width = width;
+    
+    var ctx = output.getContext ('2d');
+
+    ctx.lineWidth = 8;
+    ctx.font = '6pt Arial';
+    
+    dataset.forEach(function(point,index){
+      
+      ctx.beginPath ();
+    
+      ctx.moveTo(point.x * (height/100), point.y * (width/100));
+      
+      ctx.strokeStyle = point.color;
+      ctx.fillStyle = point.color;
+      
+      ctx.fillText( point.id.toString(), point.attribute.x * (height/100), ((point.attribute.y * (width/100)) - 5));
+      ctx.arc(point.attribute.x * (height/100), point.attribute.y * (width/100), 1, 0, Math.PI*2, true);
+      
+      ctx.stroke();
+      ctx.fill();
+      
+      ctx.closePath();
+      
+    });
     
     var visual = document.createElement('img');
     visual.width = output.width;
@@ -277,6 +329,19 @@ function OPTICS(dataset){
       
     }
     return min_distance;
+  };
+  
+  var getRandomColor = function(){
+    
+    var color = '#' + Math.floor(Math.random() * 255).toString(16) + Math.floor(Math.random() * 255).toString(16) + Math.floor(Math.random() * 255).toString(16);
+    if( color.length === 7 && tmp_color_color !== color ){
+    
+      tmp_color_color = color;
+      return color;
+    }
+    else
+      return getRandomColor();
+      
   };
   
   var drawArrows = function(ctx, start_x, start_y, x_axis_width, y_axis_height, x_units, y_units){
