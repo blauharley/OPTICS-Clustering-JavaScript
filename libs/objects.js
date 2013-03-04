@@ -85,7 +85,7 @@ function Queue(){
 // dataset should lok like this: [ { id: 'identifier', a: Number, b: Number ... OR  x: Number, y: Number ... }, {...} ]
 function OPTICS(dataset){
   
-  var unsorted_list = [];
+  var unsorted_list = null;
   var sorted_list = null;
   var priority_queue = null; 
   var core_distance = 0;
@@ -95,6 +95,8 @@ function OPTICS(dataset){
   // public methods
   
   this.start = function(epsilon, minPts){ // actual OPTICS - clustering - Algo
+    
+    unsorted_list = [];
     
     init(dataset);
     
@@ -183,7 +185,6 @@ function OPTICS(dataset){
       
       ctx.beginPath ();
       ctx.moveTo(xStartPoint, yStartPoint);
-      console.log(point.color);
       ctx.strokeStyle = point.color;
       
       if(point.reachability_distance)

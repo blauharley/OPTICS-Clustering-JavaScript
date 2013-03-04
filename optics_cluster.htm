@@ -18,8 +18,6 @@
       var minPts = Number(document.getElementById('minPts').value);
       
       var output = clusteringAlgo.start(epsilon,minPts);
-      console.log(output);
-      
       
       img = clusteringAlgo.draw2DPlot(output,1000,1000);
       document.body.appendChild(img);
