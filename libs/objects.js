@@ -120,24 +120,31 @@ function OPTICS(dataset){
           
           updateQueue(neighbors, point, priority_queue, epsilon, minPts);
           
-          for(var p = 0; p < priority_queue.getElements().length; p++){
-            
-            var queued_point = priority_queue.getElements()[p];
-            
-            if( !queued_point.processed ){
-              
-              var neighbors = getNeighbors(queued_point, epsilon);
-              queued_point.processed = true;
-              queued_point.color = cluster_color;
+          var call = function(){
           
-              sorted_list.push(queued_point);
+            for(var p = 0; p < priority_queue.getElements().length; p++){
               
-              if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
-                updateQueue(neighbors, queued_point, priority_queue, epsilon, minPts);
+              var queued_point = priority_queue.getElements()[p];
+              
+              if( !queued_point.processed ){
+                
+                var neighbors = getNeighbors(queued_point, epsilon);
+                queued_point.processed = true;
+                queued_point.color = cluster_color;
+            
+                sorted_list.push(queued_point);
+                
+                if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
+                  updateQueue(neighbors, queued_point, priority_queue, epsilon, minPts);
+                  call();
+                }
+                
               }
-              
             }
-          }
+            
+          };
+          call();
+          
         }
         
       }
