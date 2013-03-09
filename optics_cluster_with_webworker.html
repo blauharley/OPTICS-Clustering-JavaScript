@@ -1,0 +1,56 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>OPTICS-Clustering-Algo</title>
+
+<script src="libs/birth_and_death_rate.js" type="text/javascript"></script>
+<script src="libs/optics.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+  window.onload = function(){
+    
+    var clusteringAlgo = new OPTICS(birth_and_death_rate);
+
+    document.getElementById('clusterButton').onclick = function(event){
+      
+      var main_webworker = new Worker('libs/main_webworker.js');
+          
+      main_webworker.onmessage = function(event){ // when main webworker returned message it has finished calculating optimal parameters(epsilon,minPts)
+    
+        console.log(event.data);
+        var data = event.data;
+        
+        var epsilon = Number(data.e);
+        var minPts = Number(data.minPts);
+        
+        var output = clusteringAlgo.start(epsilon,minPts);
+        
+        var img = clusteringAlgo.draw2DPlot(output,1000,1000);
+        document.body.appendChild(img);
+        
+        img = clusteringAlgo.drawBarChartPlot(output, epsilon, minPts, 1000, 1000);
+        document.body.appendChild(img);
+        
+      }; 
+      
+      main_webworker.postMessage(birth_and_death_rate);
+      
+    };
+    
+  };
+
+</script>
+</head>
+
+<body>
+<h2>Dataset: birth and deathrate of 69 countries</h2>
+<table>
+  <form>
+    
+    <tr><td><input type="button" id="clusterButton" value="determine optimal visualization"/></td></tr>
+    
+  </form>
+</table>
+</body>
+</html>

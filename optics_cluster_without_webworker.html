@@ -1,0 +1,54 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>OPTICS-Clustering-Algo</title>
+
+<script src="libs/birth_and_death_rate.js" type="text/javascript"></script>
+<script src="libs/optics.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+  window.onload = function(){
+    
+    var clusteringAlgo = new OPTICS(birth_and_death_rate);
+
+    document.getElementById('clusterButton').onclick = function(event){
+        
+      var epsilon = Number(document.getElementById('epsilon').value);
+      var minPts = Number(document.getElementById('minPts').value);
+      
+      var output = clusteringAlgo.start(epsilon,minPts);
+      
+      img = clusteringAlgo.draw2DPlot(output,1000,1000);
+      document.body.appendChild(img);
+      
+      img = clusteringAlgo.drawBarChartPlot(output, epsilon, minPts, 1000, 1000);
+      document.body.appendChild(img);
+      
+    };
+    
+  };
+
+</script>
+</head>
+
+<body>
+<h2>Dataset: birth and deathrate of 69 countries</h2>
+<table>
+  <form>
+    <tr>
+      <td>Epsilon (Area of Core-Point) |</td>
+      <td>MinPts (Minimal Number of neighboring Points)</td>
+    </tr>
+    
+    <tr>
+      <td><input type="text" id="epsilon" placeholder="epsilon" /></td>
+      <td><input type="text" id="minPts" placeholder="minPts" /></td>
+    </tr>
+    
+    <tr><td><input type="button" id="clusterButton" value="calculate"/></td></tr>
+    
+  </form>
+</table>
+</body>
+</html>
