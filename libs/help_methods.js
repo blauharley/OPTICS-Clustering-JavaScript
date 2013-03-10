@@ -138,21 +138,23 @@ var calculateCircalArea = function(diameter){
 
 // the higher bith ratios are the better is a result
 // results -> [{ e: Number, minPts: Number, ratio_undefined: Number, ratio_density: Number },...]
-var getBestResultByHighestRatios = function(results){
+var getBestResultByHighestRatios = function(results, num_of_data_items){
   
-  var ratio_undefined = 0;
   var ratio_density = 0;
   var best_result = null;
   
-  for(var result=0; result < results.length; result++)
-    if( results[result].ratio_undefined > ratio_undefined ){ // first priority the less infinity data-items there are the better it is
-      if( results[result].ratio_density > ratio_density ){ // second priority the more dense the clusters are in a dataset the better it is
-        ratio_undefined = results[result].ratio_undefined;
-        ratio_density = results[result].ratio_density;
+  for(var r=0; r < results.length; r++){
+    
+    if( results[r] && results[r].ratio_undefined >= (num_of_data_items/10) && results[r].ratio_undefined < (num_of_data_items/10)*2 ){ // first priority the less infinity data-items there are the better it is
+      if( results[r].ratio_density > ratio_density ){ // second priority the more dense the clusters are in a dataset the better it is
         
-        best_result = { e: results[result].e, minPts: results[result].minPts, ratio_undefined: results[result].ratio_undefined, ratio_density: results[result].ratio_density };
+        ratio_density = results[r].ratio_density;
+        
+        best_result = { e: results[r].e, minPts: results[r].minPts, ratio_undefined: results[r].ratio_undefined, ratio_density: results[r].ratio_density };
       }
     }
+    
+  }
   
   return best_result;
 };
