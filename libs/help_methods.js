@@ -62,7 +62,7 @@ var getClusterbyColor = function(cluster_color,dataset){
   
 };
 
-// first ration to determine optimal parameter settings
+// first metric to determine optimal parameter settings
 var getRatioNotUndefinedToUndefined = function(dataset){
 
   var num_of_undefined_elements = 0;
@@ -78,7 +78,62 @@ var getRatioNotUndefinedToUndefined = function(dataset){
     
 };
 
-// second ration to determine optimal parameter settings
+// second metric to determine optimal parameter settings
+var countValleys = function(dataset){
+  
+  // all points that have got infinity or undefined reachability-distances get a certain reachability-distance of 1000
+  for(var p=0; p < dataset.length; p++){
+    if( dataset[p].reachability_distance === undefined )
+      dataset[p].reachability_distance = 1000;
+  }
+  
+  var high_tolerance = (dataset[0].reachability_distance/100)*5;
+  
+  var bar_height = dataset[0].reachability_distance;
+  var start_point_pos = 0;
+  var count = 0;
+  
+  for(var p=1; p < dataset.length; p++){
+    
+    // if true, reachability-distances lie within tolerance
+    if( isWithinToleranceHeight(bar_height, dataset[p].reachability_distance, high_tolerance) ){
+    
+      count++;
+      count += p - start_point_pos - 1;
+      start_point_pos++;
+      p = start_point_pos;
+      bar_height = dataset[p].reachability_distance;
+      
+    }
+    
+    // if true, points have got higher reachability-distances as the tolerance grants
+    // or, when there are still points that must be analysed
+    else if( isOutOfToleranceHeight(bar_height, dataset[p].reachability_distance, high_tolerance) || areThereNotAnalysedPoints(start_point_pos, p, dataset) ){
+      start_point_pos++;
+      p = start_point_pos;
+      bar_height = dataset[p].reachability_distance;
+    }
+    
+  }
+  
+  return count;
+  
+};
+
+var isWithinToleranceHeight = function(norm_height, point_height, tolerance){
+  return point_height >= norm_height && point_height <= (norm_height+tolerance);
+};
+
+// 
+var isOutOfToleranceHeight = function(norm_height, point_height, tolerance){
+  return point_height >= norm_height && !isWithinToleranceHeight(norm_height, point_height, tolerance);
+};
+
+var areThereNotAnalysedPoints = function(start_point_pos, current_pos, dataset){
+  return current_pos === (dataset.length-1) && start_point_pos < current_pos;
+};
+
+// not used metric to determine optimal parameter settings
 var getRatioClusterDensityAverage = function(dataset){
         
   var cluster_densities = [];
@@ -136,22 +191,21 @@ var calculateCircalArea = function(diameter){
   return ((diameter*diameter)*Math.PI)/4;
 };
 
-// the higher bith ratios are the better is a result
-// results -> [{ e: Number, minPts: Number, ratio_undefined: Number, ratio_density: Number },...]
-var getBestResultByHighestRatios = function(results, num_of_data_items){
+
+// evaluates results of metric
+var getBestResult = function(results){
   
-  var ratio_density = 0;
+  var highest_symentric_count = 0;
   var best_result = null;
   
   for(var r=0; r < results.length; r++){
     
-    if( results[r] && results[r].ratio_undefined >= (num_of_data_items/10) && results[r].ratio_undefined < (num_of_data_items/10)*2 ){ // first priority the less infinity data-items there are the better it is
-      if( results[r].ratio_density > ratio_density ){ // second priority the more dense the clusters are in a dataset the better it is
+    if( results[r].symmetric_count > highest_symentric_count ){ // first priority the less infinity data-items there are the better it is
+      
+        highest_symentric_count = results[r].symmetric_count;
         
-        ratio_density = results[r].ratio_density;
-        
-        best_result = { e: results[r].e, minPts: results[r].minPts, ratio_undefined: results[r].ratio_undefined, ratio_density: results[r].ratio_density };
-      }
+        best_result = { e: results[r].e, minPts: results[r].minPts, symmetric_count: highest_symentric_count };
+      
     }
     
   }

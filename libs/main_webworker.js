@@ -41,7 +41,7 @@ var initializeSubWebWorker = function(start_epsilon, end_epsilon, dataset, max_e
     
     if( calulated_optimal_parameters.length === sub_workers.length ){ // all sub-webworker have finished their calulations, now they are going to be compared
       
-      var best_result = getBestResultByHighestRatios(calulated_optimal_parameters, dataset.length);
+      var best_result = getBestResult(calulated_optimal_parameters);
       postMessage(best_result); // main-webworker finish point
       
     }  

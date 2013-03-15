@@ -17,15 +17,14 @@ onmessage = function(event){
       
       var result = clusteringAlgo.start(epsilon, minPts);
       
-      var ratio_of_not_undefined_elements_to_undefined_elements = getRatioNotUndefinedToUndefined(result);
-      var ratio_cluster_density = getRatioClusterDensityAverage(result); // calulate density of each cluster and calculate average of all cluster-densities
+      var symmetric_count = countValleys(result); // quality-metric of a result
       
-      results.push({ e: epsilon, minPts: minPts, ratio_undefined: ratio_of_not_undefined_elements_to_undefined_elements, ratio_density: ratio_cluster_density })
+      results.push({ e: epsilon, minPts: minPts, symmetric_count: symmetric_count })
     }
     
   }
   
-  var best_result = getBestResultByHighestRatios(results,data.dataset.length); // compare results and return result that has got hightest ratios
+  var best_result = getBestResult(results); // compare results and return result that has got hightest ratios
   
   postMessage(best_result); // sub-webworker finish point
   
