@@ -12,12 +12,20 @@
     
     document.getElementById('clusterButton').onclick = function(event){
       
+      document.getElementById('progress_bar').value = '0';
+      
       var main_webworker = new Worker('libs/main_webworker.js')
       
       main_webworker.onmessage = function(event){ // when main webworker returned message it has finished calculating optimal parameters(epsilon,minPts)
         
         var data = event.data;
-        console.log(data);
+        
+        if(data.progress_level){
+          document.getElementById('progress_bar').value = data.progress_level;
+          return;
+        }
+        
+        console.log('best result: ',data);
         
         main_webworker.terminate();
         
@@ -52,7 +60,7 @@
 <h2 id="result"></h2>
 <table>
   <form>
-    
+    <tr><td>Worker's finished:<progress value="0" max="1" id="progress_bar"></progress></td></tr>
     <tr><td><input type="button" id="clusterButton" value="determine optimal visualization"/></td></tr>
     
   </form>

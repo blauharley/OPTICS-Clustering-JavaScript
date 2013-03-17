@@ -39,12 +39,16 @@ var initializeSubWebWorker = function(start_epsilon, end_epsilon, dataset, max_e
     // calculated optimal epsilon and minPts-parameter for a given dataset
     calulated_optimal_parameters.push(event.data); // event.date -> { e: Number, minPts: Number, ratio_undefined: Number, ratio_density: Number }
     
+    // for progress-bar
+    postMessage({ progress_level: (calulated_optimal_parameters.length/sub_workers.length) });
+    
     if( calulated_optimal_parameters.length === sub_workers.length ){ // all sub-webworker have finished their calulations, now they are going to be compared
       
       var best_result = getBestResult(calulated_optimal_parameters);
       postMessage(best_result); // main-webworker finish point
       
-    }  
+    }
+    
   };
   
   sub_worker.postMessage({ start: start_epsilon, end: end_epsilon, dataset: dataset, max_epsilon: max_epsilon, sub_worker_step: sub_worker_step });
