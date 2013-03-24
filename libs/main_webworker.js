@@ -1,5 +1,5 @@
 ﻿// main-webworker that coordinates epsilon-steps of each sub-webworker
-// there are five sub-webworker that get start and end epsilon values from the main-webworker
+// there are several sub-webworker that get start and end epsilon values from the main-webworker
 
 importScripts('help_methods.js');
 
@@ -7,12 +7,11 @@ importScripts('help_methods.js');
 var calulated_optimal_parameters = [];
 var sub_workers = [];
 
-var dataset = null;
-
 
 onmessage = function(event){
   
-  dataset = event.data;
+  var dataset = event.data.dataset;
+  var indexNumber = event.data.indexNumber;
   
   var max_eplison_distance = calculateMaxEpsilon(dataset);
   var max_allowed_eplison_distance = (max_eplison_distance/10) + (max_eplison_distance/100); // this number is the threshold of all sub-webworker, (max_eplison_distance/100) compensate start-value
@@ -23,14 +22,14 @@ onmessage = function(event){
     
     var end_epsilon_steps = start_epsilon_steps + sub_worker_step;
     
-    initializeSubWebWorker(start_epsilon_steps, end_epsilon_steps, dataset, max_eplison_distance, sub_worker_step);
+    initializeSubWebWorker(start_epsilon_steps, end_epsilon_steps, indexNumber, dataset, sub_worker_step);
     
   }
   
 };
 
 
-var initializeSubWebWorker = function(start_epsilon, end_epsilon, dataset, max_epsilon, sub_worker_step){
+var initializeSubWebWorker = function(start_epsilon, end_epsilon, indexNumber, dataset, sub_worker_step){
   
   var sub_worker = new Worker('sub_webworker.js');
   
@@ -42,7 +41,7 @@ var initializeSubWebWorker = function(start_epsilon, end_epsilon, dataset, max_e
     // for progress-bar
     postMessage({ progress_level: (calulated_optimal_parameters.length/sub_workers.length) });
     
-    if( calulated_optimal_parameters.length === sub_workers.length ){ // all sub-webworker have finished their calulations, now they are going to be compared
+    if( calulated_optimal_parameters.length === sub_workers.length ){ // all sub-webworker have finished their calulations, now the results are going to be compared
       
       var best_result = getBestResult(calulated_optimal_parameters);
       postMessage(best_result); // main-webworker finish point
@@ -51,7 +50,7 @@ var initializeSubWebWorker = function(start_epsilon, end_epsilon, dataset, max_e
     
   };
   
-  sub_worker.postMessage({ start: start_epsilon, end: end_epsilon, dataset: dataset, max_epsilon: max_epsilon, sub_worker_step: sub_worker_step });
+  sub_worker.postMessage({ start: start_epsilon, end: end_epsilon, indexNumber: indexNumber, dataset: dataset, sub_worker_step: sub_worker_step });
   
   sub_workers.push(sub_worker);
   

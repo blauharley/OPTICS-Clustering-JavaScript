@@ -13,18 +13,28 @@ onmessage = function(event){
   
   for(var epsilon=data.start; epsilon < data.end; epsilon += step){
   
-    for(var minPts=3; minPts < 11; minPts++){
+    for(var minPts=8; minPts < 11; minPts++){
       
       var result = clusteringAlgo.start(epsilon, minPts);
       
-      var symmetric_count = countValleys(result); // quality-metric of a result
+      if(data.indexNumber === 'lowest_reachability'){
       
-      results.push({ e: epsilon, minPts: minPts, symmetric_count: symmetric_count })
+        var reachability_count = countPointsWidthinReachabilityThreshold(result); // an index-number methode
+        results.push({ e: epsilon, minPts: minPts, count: reachability_count });
+        
+      }
+      else{
+      
+        var symmetric_count = countValleys(result); // an index-number methode
+        results.push({ e: epsilon, minPts: minPts, count: symmetric_count });
+        
+      }
+      
     }
     
   }
   
-  var best_result = getBestResult(results); // compare results and return result that has got hightest ratios
+  var best_result = getBestResult(results); // compare results and return result that has got hightest count
   
   postMessage(best_result); // sub-webworker finish point
   

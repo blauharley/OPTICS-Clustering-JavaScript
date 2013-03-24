@@ -217,7 +217,7 @@ function OPTICS(dataset){
     ctx.stroke();
     ctx.closePath();
     
-    drawArrows(ctx, 115, yStartPoint, Number(output.width), Number(output.height), 100, 100);
+    drawAxes(ctx, 115, yStartPoint, Number(output.width), Number(output.height), dataset.length, 100);
     
     var visual = convertToImg(output);
     
@@ -237,17 +237,21 @@ function OPTICS(dataset){
     ctx.lineWidth = 8;
     ctx.font = '6pt Arial';
     
+    var moveSteps = {};
+    moveSteps.x = dataset.length > 100 ? ((width/dataset.length)/3.5) : (width/dataset.length);
+    moveSteps.y = dataset.length > 100 ? ((height/dataset.length)/3.5) : (height/dataset.length);
+    
     dataset.forEach(function(point,index){
       
       ctx.beginPath ();
     
-      ctx.moveTo(point.x * (height/100), point.y * (width/100));
+      ctx.moveTo(point.x * moveSteps.x, point.y * moveSteps.y);
       
       ctx.strokeStyle = point.color;
       ctx.fillStyle = point.color;
       
-      ctx.fillText( point.id.toString(), point.attribute.x * (height/100), ((point.attribute.y * (width/100)) - 5));
-      ctx.arc(point.attribute.x * (height/100), point.attribute.y * (width/100), 1, 0, Math.PI*2, true);
+      ctx.fillText( point.id.toString(), point.attribute.x * moveSteps.x, ((point.attribute.y * moveSteps.y) - 5));
+      ctx.arc(point.attribute.x * moveSteps.x, point.attribute.y * moveSteps.y, 1, 0, Math.PI*2, true);
       
       ctx.stroke();
       ctx.fill();
@@ -261,7 +265,6 @@ function OPTICS(dataset){
     
     return visual;
   };
-  
   
   // private methods
   
@@ -285,7 +288,7 @@ function OPTICS(dataset){
     
     var neughbors = [];
     unsorted_list.forEach(function(otherPoint,index){
-      if( point !== otherPoint && dist(point.attribute, otherPoint.attribute) < epsilon ){
+      if( point !== otherPoint && !otherPoint.processed && dist(point.attribute, otherPoint.attribute) < epsilon ){
         neughbors.push(otherPoint);
       }
     });
@@ -297,7 +300,7 @@ function OPTICS(dataset){
     core_distance = calculateCoreDistance(point, epsilon, minPts);
     
     neighbors.forEach(function(otherPoint,index){
-    
+      
       if(!otherPoint.processed){
   
         var new_reachable_distance = Math.max(core_distance, dist(point.attribute, otherPoint.attribute) );
@@ -348,7 +351,7 @@ function OPTICS(dataset){
       
   };
   
-  var drawArrows = function(ctx, start_x, start_y, x_axis_width, y_axis_height, x_units, y_units){
+  var drawAxes = function(ctx, start_x, start_y, x_axis_width, y_axis_height, x_units, y_units){
     
     ctx.beginPath();
     ctx.lineWidth = 3;
@@ -366,7 +369,7 @@ function OPTICS(dataset){
       ctx.lineTo(nextPosX, start_y - 5 );
       ctx.fillText( u.toString(), nextPosX-3, (start_y + 10));
       
-      nextPosX = start_x + ((x_axis_width / x_units) * (u + 1));
+      nextPosX = start_x + (10 * (u + 1));
     }
     
     
