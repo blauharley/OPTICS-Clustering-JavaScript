@@ -28,7 +28,7 @@ var countValleys = function(dataset){
   // all points that have got infinity or undefined reachability-distances get a certain reachability-distance of 1000
   for(var p=0; p < dataset.length; p++){
     if( dataset[p].reachability_distance === undefined )
-      dataset[p].reachability_distance = 1000;
+      dataset[p].reachability_distance = 10000;
   }
   
   var high_tolerance = (dataset[0].reachability_distance/100)*5;
@@ -83,7 +83,7 @@ var areThereNotAnalysedPoints = function(start_point_pos, current_pos, dataset){
 var countPointsWidthinReachabilityThreshold = function(dataset){
   
   var count = 0;
-  var lowestReachabilityAtPosition = 3;
+  var lowestReachabilityAtPosition = 0; // start at point with lowest value
   var reachabilityThreshold = getPointWithLowestReachability( dataset, lowestReachabilityAtPosition );
   reachabilityThreshold *= 2;
   
@@ -147,7 +147,7 @@ var getBestResult = function(results){
   
   for(var r=0; r < results.length; r++){
     
-    if( results[r] && results[r].count > highest_count ){ // first priority the less infinity data-items there are the better it is
+    if( results[r].count > highest_count ){ // first priority the less infinity data-items there are the better it is
       
         highest_count = results[r].count;
         

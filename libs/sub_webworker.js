@@ -13,20 +13,21 @@ onmessage = function(event){
   
   for(var epsilon=data.start; epsilon < data.end; epsilon += step){
   
-    for(var minPts=8; minPts < 11; minPts++){
+    for(var minPts=data.startMinPts; minPts < data.endMinPts; minPts++){
       
       var result = clusteringAlgo.start(epsilon, minPts);
       
       if(data.indexNumber === 'lowest_reachability'){
-      
+        
         var reachability_count = countPointsWidthinReachabilityThreshold(result); // an index-number methode
         results.push({ e: epsilon, minPts: minPts, count: reachability_count });
-        
+        //postMessage({ test: 'test', e: epsilon, minPts: minPts, count: reachability_count, result:result});
       }
       else{
       
         var symmetric_count = countValleys(result); // an index-number methode
         results.push({ e: epsilon, minPts: minPts, count: symmetric_count });
+        //postMessage({ test: 'test', e: epsilon, minPts: minPts, count: symmetric_count, result:result});
         
       }
       

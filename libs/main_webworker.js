@@ -12,6 +12,8 @@ onmessage = function(event){
   
   var dataset = event.data.dataset;
   var indexNumber = event.data.indexNumber;
+  var startMinPts = event.data.startMinPts;
+  var endMinPts = event.data.endMinPts;
   
   var max_eplison_distance = calculateMaxEpsilon(dataset);
   var max_allowed_eplison_distance = (max_eplison_distance/10) + (max_eplison_distance/100); // this number is the threshold of all sub-webworker, (max_eplison_distance/100) compensate start-value
@@ -22,19 +24,23 @@ onmessage = function(event){
     
     var end_epsilon_steps = start_epsilon_steps + sub_worker_step;
     
-    initializeSubWebWorker(start_epsilon_steps, end_epsilon_steps, indexNumber, dataset, sub_worker_step);
+    initializeSubWebWorker(start_epsilon_steps, end_epsilon_steps, startMinPts, endMinPts, indexNumber, dataset, sub_worker_step);
     
   }
   
 };
 
 
-var initializeSubWebWorker = function(start_epsilon, end_epsilon, indexNumber, dataset, sub_worker_step){
+var initializeSubWebWorker = function(start_epsilon, end_epsilon, startMinPts, endMinPts, indexNumber, dataset, sub_worker_step){
   
   var sub_worker = new Worker('sub_webworker.js');
   
   sub_worker.onmessage = function(event){
     
+    /*if(event.data.test){
+      postMessage(event.data);
+      return;
+    }*/
     // calculated optimal epsilon and minPts-parameter for a given dataset
     calulated_optimal_parameters.push(event.data); // event.date -> { e: Number, minPts: Number, ratio_undefined: Number, ratio_density: Number }
     
@@ -50,7 +56,15 @@ var initializeSubWebWorker = function(start_epsilon, end_epsilon, indexNumber, d
     
   };
   
-  sub_worker.postMessage({ start: start_epsilon, end: end_epsilon, indexNumber: indexNumber, dataset: dataset, sub_worker_step: sub_worker_step });
+  sub_worker.postMessage({ 
+    start: start_epsilon, 
+    end: end_epsilon, 
+    startMinPts: startMinPts, 
+    endMinPts: endMinPts, 
+    indexNumber: indexNumber, 
+    dataset: dataset, 
+    sub_worker_step: sub_worker_step 
+  });
   
   sub_workers.push(sub_worker);
   

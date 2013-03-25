@@ -12,11 +12,14 @@
   var clusteringAlgo = null;
   var selectedDataset = 'birth_and_death_rate';
   var indexNumber = 'lowest_reachability';
-  
+  var startMinPtsValue = 0;
+  var endMinPtsValue = 0;
+  var output = null;
   window.onload = function(){
     
     document.getElementById('clusterButton').onclick = function(event){
       
+      //this.disabled = true;
       document.getElementById('progress_bar').value = '0';
       
       var main_webworker = new Worker('libs/main_webworker.js')
@@ -25,12 +28,16 @@
         
         var data = event.data;
         
+        //console.log('data: ',data);
+        
         if(data.progress_level){
           document.getElementById('progress_bar').value = data.progress_level;
           return;
         }
         
         main_webworker.terminate();
+        
+        document.getElementById('clusterButton').disabled = false;
         
         visualizeResult(data.e, data.minPts);
       };
@@ -44,10 +51,16 @@
         dataToSend.dataset = random_points;
       
       /* which index-number should be used? */
-      dataToSend.indexNumber = 'lowest_reachability';
+      dataToSend.indexNumber = indexNumber;
       
-      main_webworker.postMessage(dataToSend);
+      /* at which minPts-number to start and to end */
+      dataToSend.startMinPts = startMinPtsValue;
+      dataToSend.endMinPts = endMinPtsValue;
       
+      if( dataToSend.endMinPts > dataToSend.startMinPts)
+        main_webworker.postMessage(dataToSend);
+      else
+        alert('Choose minPts-Values');
     };
     
     function visualizeResult(epsilon, minPts){
@@ -87,20 +100,44 @@
 
 <body>
 <h2>This app is made for searching optimal parameter-values for OPTICS</h2>
-<h2>Choose dataset and index-number and press determine</h2>
+<h3>Choose a dataset, an index-number and minPts-Values and press determine, tip: please choose minPts-Values carefully and choose values that do not have got a too high difference</h3>
 <h2 id="result"></h2>
 <table>
   <form>
-    <select onchange="changeDataset(this)">
-      <option value="birth_and_death_rate" selected>Birth and Death Rat of Countries</option>
-      <option value="random_points">Random Points on ground</option>
-    </select>
-    <select onchange="changeIndexNumber(this)">
-      <option value="symmetric">Symmetric Index-Number</option>
-      <option value="lowest_reachability" selected>Lowest-Reachability Index-Number</option>
-    </select>
-    <tr><td>Worker's finished:<progress value="0" max="1" id="progress_bar"></progress></td></tr>
+    
     <tr>
+      <td>
+        Use Dataset 
+        <select onchange="changeDataset(this)">
+          <option value="birth_and_death_rate" selected>Birth and Death Rat of Countries</option>
+          <option value="random_points">Random Points on ground</option>
+        </select>
+      </td>
+      <td>
+        with Index-Number
+        <select onchange="changeIndexNumber(this)">
+          <option value="symmetric">Symmetric</option>
+          <option value="lowest_reachability" selected>Lowest-Reachability</option>
+        </select>
+      </td>
+      <td>
+        and minPts-Values
+        <select id="startMinPts" onchange="changeMinPtsNumber( this.value, document.getElementById('endMinPts').value )">
+        </select>
+      </td>
+      <td>
+        <select id="endMinPts" onchange="changeMinPtsNumber( document.getElementById('startMinPts').value, this.value )">
+        </select>
+      </td>
+      <td>
+        <input type="button" id="resetMinPtsValues" value="reset minPts-Values"/>
+      </td>
+    </tr>
+    
+    <tr>
+      <td>Worker's finished:<progress value="0" max="1" id="progress_bar"></progress>
+      </td>
+    
       <td>
         <input type="button" id="clusterButton" value="determine"/>
         <input type="button" id="terminateWorkerButton" value="terminate Worker" />
@@ -110,4 +147,5 @@
   </form>
 </table>
 </body>
+<script src="libs/setup_minPts.js" type="text/javascript"></script>
 </html>
