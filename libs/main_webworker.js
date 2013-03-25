@@ -1,7 +1,7 @@
 ﻿// main-webworker that coordinates epsilon-steps of each sub-webworker
 // there are several sub-webworker that get start and end epsilon values from the main-webworker
 
-importScripts('help_methods.js');
+importScripts('help_methods/calculateMaxEpsilon.js','help_methods/getBestResult.js');
 
 // calulated optimal parameters(epsilon,minPts) by sub-webworker
 var calulated_optimal_parameters = [];
@@ -37,10 +37,6 @@ var initializeSubWebWorker = function(start_epsilon, end_epsilon, startMinPts, e
   
   sub_worker.onmessage = function(event){
     
-    /*if(event.data.test){
-      postMessage(event.data);
-      return;
-    }*/
     // calculated optimal epsilon and minPts-parameter for a given dataset
     calulated_optimal_parameters.push(event.data); // event.date -> { e: Number, minPts: Number, ratio_undefined: Number, ratio_density: Number }
     

@@ -1,6 +1,6 @@
 ﻿// sub-webworker that works up a start, end-epsilon step
 
-importScripts('optics.js','help_methods.js');
+importScripts('optics.js','help_methods/indexNumbers.js','help_methods/getBestResult.js');
 
 onmessage = function(event){
   
@@ -8,7 +8,6 @@ onmessage = function(event){
   
   var clusteringAlgo = new OPTICS(data.dataset);
   var results = [];
-  
   var step = data.sub_worker_step/10;
   
   for(var epsilon=data.start; epsilon < data.end; epsilon += step){
@@ -21,13 +20,18 @@ onmessage = function(event){
         
         var reachability_count = countPointsWidthinReachabilityThreshold(result); // an index-number methode
         results.push({ e: epsilon, minPts: minPts, count: reachability_count });
-        //postMessage({ test: 'test', e: epsilon, minPts: minPts, count: reachability_count, result:result});
+        
       }
-      else{
+      else if(data.indexNumber === 'symmetric'){
       
         var symmetric_count = countValleys(result); // an index-number methode
         results.push({ e: epsilon, minPts: minPts, count: symmetric_count });
-        //postMessage({ test: 'test', e: epsilon, minPts: minPts, count: symmetric_count, result:result});
+        
+      }
+      else if(data.indexNumber === 'raisings'){
+      
+        var raising_count = countRaisings(result); // an index-number methode
+        results.push({ e: epsilon, minPts: minPts, count: raising_count });
         
       }
       

@@ -1,26 +1,4 @@
 
-// calculate max distance between two points within a cluster
-var calculateMaxEpsilon = function(dataset){
-  
-  var max_eps = 0;
-  
-  dataset.forEach(function(point,index){
-    
-    var current_point = point;
-    dataset.forEach(function(point,index){
-      
-      if( current_point !== point && dist(current_point, point) > max_eps )
-        max_eps = dist(current_point, point);
-      
-    });
-    
-    
-  });
-  
-  return max_eps;
-};
-
-
 /* first index-number */
 // symmetry-index-number to determine optimal parameter settings
 var countValleys = function(dataset){
@@ -78,6 +56,9 @@ var areThereNotAnalysedPoints = function(start_point_pos, current_pos, dataset){
 };
 
 
+/* ----------------------------------------------------------------------------------------------------------------------- */
+
+
 /* second index-number */
 // reachability-index-number to determine optimal parameter settings
 var countPointsWidthinReachabilityThreshold = function(dataset){
@@ -117,46 +98,21 @@ var getPointWithLowestReachability = function(dataset,lowestReachability){
 };
 
 
+/* ----------------------------------------------------------------------------------------------------------------------- */
 
-
-// Pythagoras distance
-// pointA -> { a: Number, b:Number... or x: Number, y:Number... }
-var dist = function(pointA, pointB){ // pytharoras
-    
-  var multiplied_axises = [];
-  for(var axis in pointA){
-    if( !isNaN( Number(pointA[axis]) ) ) // axis must have got metric value in order to be processed
-      multiplied_axises.push( ((pointA[axis] - pointB[axis]) * (pointA[axis] - pointB[axis])) );
-  }
+/* third index-number */
+// raising-index-number to determine optimal parameter settings
+var countRaisings = function(dataset){
   
-  var sum = 0;
-  multiplied_axises.forEach(function(val,index){
-    sum += val;
-  });
+  var count = 0;
   
-  return Math.sqrt(sum);
-};
-
-
-
-// evaluates results of metric
-var getBestResult = function(results){
-  
-  var highest_count = 0;
-  var best_result = null;
-  
-  for(var r=0; r < results.length; r++){
-    
-    if( results[r].count > highest_count ){ // first priority the less infinity data-items there are the better it is
+  for(var p=0; p < dataset.length-1; p++){
       
-        highest_count = results[r].count;
-        
-        best_result = { e: results[r].e, minPts: results[r].minPts, count: highest_count };
-      
+    if( dataset[p].reachability_distance < dataset[p+1].reachability_distance ){
+      count++;
     }
     
   }
   
-  return best_result;
+  return count;
 };
-
