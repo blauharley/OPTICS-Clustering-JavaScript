@@ -288,7 +288,7 @@ function OPTICS(dataset){
     
     var neughbors = [];
     unsorted_list.forEach(function(otherPoint,index){
-      if( point !== otherPoint && !otherPoint.processed && dist(point.attribute, otherPoint.attribute) < epsilon ){
+      if( point !== otherPoint && dist(point.attribute, otherPoint.attribute) < epsilon ){
         neughbors.push(otherPoint);
       }
     });
