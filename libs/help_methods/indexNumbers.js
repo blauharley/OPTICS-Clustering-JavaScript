@@ -3,17 +3,17 @@
 // symmetry-index-number to determine optimal parameter settings
 var countValleys = function(dataset){
   
-  // all points that have got infinity or undefined reachability-distances get a certain reachability-distance of 1000
+  var high_tolerance = (getHighestReachability(dataset)/100)*5;
+  var start_point_pos = 0;
+  var count = 0;
+  
+  // all points that have got infinity or undefined reachability-distances get a reachability-distance of 10000
   for(var p=0; p < dataset.length; p++){
     if( dataset[p].reachability_distance === undefined )
       dataset[p].reachability_distance = 10000;
   }
   
-  var high_tolerance = (dataset[0].reachability_distance/100)*5;
-  
   var bar_height = dataset[0].reachability_distance;
-  var start_point_pos = 0;
-  var count = 0;
   
   for(var p=1; p < dataset.length; p++){
     
@@ -40,6 +40,21 @@ var countValleys = function(dataset){
   
   return count;
   
+};
+
+var getHighestReachability = function(dataset){
+  
+  var highest = 0;
+  
+  dataset.forEach(function(point,index){
+    
+    if(point.reachability_distance > highest){
+      highest = point.reachability_distance;
+    }
+    
+  });
+  
+  return highest;
 };
 
 var isWithinToleranceHeight = function(norm_height, point_height, tolerance){

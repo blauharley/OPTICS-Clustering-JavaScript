@@ -46,7 +46,7 @@ var initializeSubWebWorker = function(start_epsilon, end_epsilon, startMinPts, e
     if( calulated_optimal_parameters.length === sub_workers.length ){ // all sub-webworker have finished their calulations, now the results are going to be compared
       
       var best_result = getBestResult(calulated_optimal_parameters);
-      postMessage(best_result); // main-webworker finish point
+      postMessage(best_result); // main-webworker finished
       
     }
     

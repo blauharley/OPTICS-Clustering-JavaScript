@@ -41,6 +41,6 @@ onmessage = function(event){
   
   var best_result = getBestResult(results); // compare results and return result that has got hightest count
   
-  postMessage(best_result); // sub-webworker finish point
+  postMessage(best_result); // sub-webworker finished
   
 };
