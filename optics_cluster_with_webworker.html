@@ -11,7 +11,7 @@
   
   var clusteringAlgo = null;
   var selectedDataset = 'birth_and_death_rate';
-  var indexNumber = 'raisings';
+  var indexNumber = 'gradient';
   var startMinPtsValue = 0;
   var endMinPtsValue = 0;
   
@@ -28,8 +28,8 @@
         
         var data = event.data;
         
-        if(data.progress_level){
-          document.getElementById('progress_bar').value = data.progress_level;
+        if(data.progressLevel){
+          document.getElementById('progress_bar').value = data.progressLevel;
           return;
         }
         
@@ -37,16 +37,26 @@
         
         document.getElementById('clusterButton').disabled = false;
         
-        visualizeResult(data.e, data.minPts);
+        showResultTable(data,selectedDataset,startMinPtsValue,endMinPtsValue);
+        
+        /* just activate this when you are sure that your computer does not crash
+        data.forEach(function(result){
+          visualizeResults(result.e, result.minPts);
+        });
+        */
       };
       
       var dataToSend = {};
       
       /* which dataset should be analysed? */
-      if(selectedDataset === 'birth_and_death_rate')
+      if(selectedDataset === 'birth_and_death_rate'){
         dataToSend.dataset = birth_and_death_rate;
-      else
+        clusteringAlgo = new OPTICS(birth_and_death_rate);
+      }
+      else{
         dataToSend.dataset = random_points;
+        clusteringAlgo = new OPTICS(random_points);
+      }
       
       /* which index-number should be used? */
       dataToSend.indexNumber = indexNumber;
@@ -61,13 +71,8 @@
         alert('Choose minPts-Values');
     };
     
-    function visualizeResult(epsilon, minPts){
+    function visualizeResults(epsilon, minPts){
       
-      if(selectedDataset === 'birth_and_death_rate')
-        clusteringAlgo = new OPTICS(birth_and_death_rate);
-      else
-        clusteringAlgo = new OPTICS(random_points);
-        
       var output = clusteringAlgo.start(epsilon,minPts);
       
       img = clusteringAlgo.draw2DPlot(output,1000,1000);
@@ -76,6 +81,21 @@
       img = clusteringAlgo.drawBarChartPlot(output, epsilon, minPts, 3000, 1000);
       document.body.appendChild(img);
         
+    }
+    
+    function showResultTable(results,dataset,fromMinPts,toMinPts){
+      var table = document.createElement('table');
+      table.setAttribute('border','3px solid black');
+      table.innerHTML = '<tr><td>Epsilon</td><td>minPts</td></tr>'
+      results.forEach(function(result){
+        table.innerHTML += '<tr><td>'+result.e+'</td><td>'+result.minPts+'</td></tr>';
+      });
+      
+      var title = document.createElement('h4');
+      title.innerHTML = 'Dataset: ' + dataset + ', from ' + fromMinPts + ' to '+ toMinPts +' minPts-values, used index-number: ' + indexNumber;
+      title.innerHTML += '<br/>achieved count: ' + results[0].count;
+      document.body.appendChild(title);
+      document.body.appendChild(table);
     }
     
     document.getElementById('terminateWorkerButton').onclick = function(event){
@@ -112,12 +132,12 @@
         </select>
       </p>
       <p style="width:400px">
-        <p><img width="150" height="150" style="border:1px solid black" id="indexNumberPicture" src="libs/img/raisings.png"></p>
-        with Index-Number
+        <p><img width="150" height="150" style="border:1px solid black" id="indexNumberPicture" src="libs/img/gradient.png"></p>
+        with Search-Mode
         <select onchange="changeIndexNumber(this)">
-          <option value="raisings" selected>Raisings</option>
-          <option value="lowest_reachability">Lowest-Reachability</option>
-          <option value="symmetric">Symmetric</option>
+          <option value="gradient" selected>search extended clusters</option>
+          <option value="density">search dense clusters</option>
+          <option value="valleys">search clusters with many valleys</option>
         </select>
         
       </p>

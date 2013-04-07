@@ -3,7 +3,7 @@
 // symmetry-index-number to determine optimal parameter settings
 var countValleys = function(dataset){
   
-  var high_tolerance = (getHighestReachability(dataset)/100)*5;
+  var high_tolerance = (getHighestReachability(dataset)/100)*2.5;
   var start_point_pos = 0;
   var count = 0;
   
@@ -81,7 +81,7 @@ var countPointsWidthinReachabilityThreshold = function(dataset){
   var count = 0;
   var lowestReachabilityAtPosition = 0; // start at point with lowest value
   var reachabilityThreshold = getPointWithLowestReachability( dataset, lowestReachabilityAtPosition );
-  reachabilityThreshold *= 2;
+  reachabilityThreshold *= 1.5;
   
   dataset.forEach(function(point,index){
     

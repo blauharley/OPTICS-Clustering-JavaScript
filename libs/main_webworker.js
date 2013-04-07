@@ -4,9 +4,9 @@
 importScripts('help_methods/calculateMaxEpsilon.js','help_methods/getBestResult.js');
 
 // calulated optimal parameters(epsilon,minPts) by sub-webworker
-var calulated_optimal_parameters = [];
-var sub_workers = [];
-
+var calulatedOptimalParameters = [];
+var subWorkers = [];
+var subWorkersFinished = 0;
 
 onmessage = function(event){
   
@@ -15,53 +15,55 @@ onmessage = function(event){
   var startMinPts = event.data.startMinPts;
   var endMinPts = event.data.endMinPts;
   
-  var max_eplison_distance = calculateMaxEpsilon(dataset);
-  var max_allowed_eplison_distance = (max_eplison_distance/10) + (max_eplison_distance/100); // this number is the threshold of all sub-webworker, (max_eplison_distance/100) compensate start-value
+  var maxEplisonDistance = calculateMaxEpsilon(dataset);
+  var maxAllowedEplisonDistance = (maxEplisonDistance/10) + (maxEplisonDistance/100); // this number is the threshold of all sub-webworker, (maxEplisonDistance/100) compensate start-value
   
-  var sub_worker_step = max_allowed_eplison_distance/10;
+  var subWorkerStep = maxAllowedEplisonDistance/10;
   
-  for( var start_epsilon_steps = max_eplison_distance/100; start_epsilon_steps <= max_allowed_eplison_distance; start_epsilon_steps += sub_worker_step ){
+  for( var startEpsilonSteps = maxEplisonDistance/100; startEpsilonSteps <= maxAllowedEplisonDistance; startEpsilonSteps += subWorkerStep ){
     
-    var end_epsilon_steps = start_epsilon_steps + sub_worker_step;
+    var endEpsilonSteps = startEpsilonSteps + subWorkerStep;
     
-    initializeSubWebWorker(start_epsilon_steps, end_epsilon_steps, startMinPts, endMinPts, indexNumber, dataset, sub_worker_step);
+    initializeSubWebWorker(startEpsilonSteps, endEpsilonSteps, startMinPts, endMinPts, indexNumber, dataset, subWorkerStep);
     
   }
   
 };
 
 
-var initializeSubWebWorker = function(start_epsilon, end_epsilon, startMinPts, endMinPts, indexNumber, dataset, sub_worker_step){
+var initializeSubWebWorker = function(startEpsilon, endEpsilon, startMinPts, endMinPts, indexNumber, dataset, subWorkerStep){
   
-  var sub_worker = new Worker('sub_webworker.js');
+  var subWorker = new Worker('sub_webworker.js');
   
-  sub_worker.onmessage = function(event){
+  subWorker.onmessage = function(event){
     
     // calculated optimal epsilon and minPts-parameter for a given dataset
-    calulated_optimal_parameters.push(event.data); // event.date -> { e: Number, minPts: Number, ratio_undefined: Number, ratio_density: Number }
+    calulatedOptimalParameters = calulatedOptimalParameters.concat(event.data); // event.date -> { e: Number, minPts: Number, count: Number }
+    
+    subWorkersFinished++;
     
     // for progress-bar
-    postMessage({ progress_level: (calulated_optimal_parameters.length/sub_workers.length) });
+    postMessage({ progressLevel: (subWorkersFinished/subWorkers.length) });
     
-    if( calulated_optimal_parameters.length === sub_workers.length ){ // all sub-webworker have finished their calulations, now the results are going to be compared
+    if( subWorkersFinished === subWorkers.length ){ // all sub-webworker have finished their calulations, now the results are going to be compared
       
-      var best_result = getBestResult(calulated_optimal_parameters);
-      postMessage(best_result); // main-webworker finished
+      var bestResult = getBestResults(calulatedOptimalParameters);
+      postMessage(bestResult); // main-webworker finished
       
     }
     
   };
   
-  sub_worker.postMessage({ 
-    start: start_epsilon, 
-    end: end_epsilon, 
+  subWorker.postMessage({ 
+    start: startEpsilon, 
+    end: endEpsilon, 
     startMinPts: startMinPts, 
     endMinPts: endMinPts, 
     indexNumber: indexNumber, 
     dataset: dataset, 
-    sub_worker_step: sub_worker_step 
+    subWorkerStep: subWorkerStep 
   });
   
-  sub_workers.push(sub_worker);
+  subWorkers.push(subWorker);
   
 };

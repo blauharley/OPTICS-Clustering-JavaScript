@@ -8,7 +8,7 @@ onmessage = function(event){
   
   var clusteringAlgo = new OPTICS(data.dataset);
   var results = [];
-  var step = data.sub_worker_step/10;
+  var step = data.subWorkerStep/10;
   
   for(var epsilon=data.start; epsilon < data.end; epsilon += step){
   
@@ -16,22 +16,22 @@ onmessage = function(event){
       
       var result = clusteringAlgo.start(epsilon, minPts);
       
-      if(data.indexNumber === 'lowest_reachability'){
+      if(data.indexNumber === 'density'){
         
-        var reachability_count = countPointsWidthinReachabilityThreshold(result); // an index-number methode
-        results.push({ e: epsilon, minPts: minPts, count: reachability_count });
-        
-      }
-      else if(data.indexNumber === 'symmetric'){
-      
-        var symmetric_count = countValleys(result); // an index-number methode
-        results.push({ e: epsilon, minPts: minPts, count: symmetric_count });
+        var densityCount = countPointsWidthinReachabilityThreshold(result); // an index-number methode
+        results.push({ e: epsilon, minPts: minPts, count: densityCount });
         
       }
-      else if(data.indexNumber === 'raisings'){
+      else if(data.indexNumber === 'valleys'){
       
-        var raising_count = countRaisings(result); // an index-number methode
-        results.push({ e: epsilon, minPts: minPts, count: raising_count });
+        var valleysCount = countValleys(result); // an index-number methode
+        results.push({ e: epsilon, minPts: minPts, count: valleysCount });
+        
+      }
+      else if(data.indexNumber === 'gradient'){
+      
+        var raisingCount = countRaisings(result); // an index-number methode
+        results.push({ e: epsilon, minPts: minPts, count: raisingCount });
         
       }
       
@@ -39,8 +39,8 @@ onmessage = function(event){
     
   }
   
-  var best_result = getBestResult(results); // compare results and return result that has got hightest count
+  var bestResults = getBestResults(results); // compare results and return results that have got hightest-count
   
-  postMessage(best_result); // sub-webworker finished
+  postMessage(bestResults); // sub-webworker finished
   
 };
