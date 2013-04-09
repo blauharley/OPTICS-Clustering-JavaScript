@@ -18,20 +18,14 @@ onmessage = function(event){
       
       if(data.indexNumber === 'density'){
         
-        var densityCount = countPointsWidthinReachabilityThreshold(result); // an index-number methode
+        var densityCount = countLowReachabilities(result); // an index-number methode
         results.push({ e: epsilon, minPts: minPts, count: densityCount });
-        
-      }
-      else if(data.indexNumber === 'valleys'){
-      
-        var valleysCount = countValleys(result); // an index-number methode
-        results.push({ e: epsilon, minPts: minPts, count: valleysCount });
         
       }
       else if(data.indexNumber === 'gradient'){
       
-        var raisingCount = countRaisings(result); // an index-number methode
-        results.push({ e: epsilon, minPts: minPts, count: raisingCount });
+        var gradientsCount = countGradients(result); // an index-number methode
+        results.push({ e: epsilon, minPts: minPts, count: gradientsCount });
         
       }
       
