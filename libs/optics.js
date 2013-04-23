@@ -5,7 +5,7 @@ function Point(){
   this.reachability_distance = undefined;
   this.attribute = null;
   this.id = null;
-  this.color = null
+  this.color = null    // missing semicolon!
 }
 
 
@@ -64,9 +64,10 @@ function Queue(){
     }
     else{
       var currentElement = _queue[index];
-    
+  
+      // achtung: keine klammern, gefahr von semicolon insertion!
       if(_queue[index] === undefined)
-        return false;
+        return false;  // warum hier ein rückgabewert, und sonst nicht?
         
       _queue[index] = ele;
     
@@ -109,7 +110,7 @@ function OPTICS(dataset){
         var neighbors = getNeighbors(point, epsilon);
         point.processed = true;
         
-        var cluster_color = getRandomColor();
+        var cluster_color = getRandomColor(point.attribute, neighbors.length);
         point.color = cluster_color;
           
         sorted_list.push(point);
@@ -266,8 +267,8 @@ function OPTICS(dataset){
     return visual;
   };
   
-  // private methods
   
+  // private methods
   var dist = function(pointA, pointB){ // pytharoras
     
     var multiplied_axises = [];
@@ -283,8 +284,10 @@ function OPTICS(dataset){
     
     return Math.sqrt(sum);
   };
-  this.dist = dist;  // make public for testing!
+
+  this.dist = dist; // MADE PUBLIC FOR TESTING!
   
+
   var getNeighbors = function(point, epsilon){
     
     var neughbors = [];
@@ -338,62 +341,79 @@ function OPTICS(dataset){
     }
     return min_distance;
   };
-  
-  var getRandomColor = function(){
-    
+
+  String.prototype.hashCode = function(){
+    var hash = 0, i, char;
+    if (this.length == 0) return hash;
+    for (i = 0; i < this.length; i++) {
+      char = this.charCodeAt(i);
+      hash = ((hash<<5)-hash)+char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+  };
+
+  var getRandomColor = function(point,no){
+    var tmp = "";
+    for(var axis in point){
+      if( !isNaN( Number(point[axis]) ) ) tmp += point[axis];
+    }
+    tmp += no;
+    return "#"+tmp.hashCode().toString(16).substr(-6);
+
     var color = '#' + Math.floor(Math.random() * 255).toString(16) + Math.floor(Math.random() * 255).toString(16) + Math.floor(Math.random() * 255).toString(16);
     if( color.length === 7 && tmp_color_color !== color ){
-    
+
       tmp_color_color = color;
       return color;
     }
     else
       return getRandomColor();
-      
+
   };
-  
+
   var drawAxes = function(ctx, start_x, start_y, x_axis_width, y_axis_height, x_units, y_units){
-    
+
     ctx.beginPath();
     ctx.lineWidth = 3;
     ctx.fillStyle = '#000000';
     ctx.strokeStyle = '#000000';
-    
+
     ctx.moveTo(start_x, start_y);
     ctx.lineTo( start_x + x_axis_width, start_y);
-    
+
     var nextPosX = start_x;
-    
+
     for(var u=0; u < x_units; u++){
-      
+
       ctx.moveTo(nextPosX, start_y + 5);
       ctx.lineTo(nextPosX, start_y - 5 );
       ctx.fillText( u.toString(), nextPosX-3, (start_y + 10));
-      
+
       nextPosX = start_x + (10 * (u + 1));
     }
-    
-    
+
+
     ctx.moveTo(start_x, start_y);
     ctx.lineTo(start_x, 0);
-    
+
     var nextPosY = start_y;
-    
+
     for(var u=0; u < y_units; u++){
-      
+
       ctx.moveTo(start_x - 5, nextPosY);
       ctx.lineTo(start_x + 5, nextPosY);
       ctx.fillText( u.toString(), start_x-15, nextPosY );
-      
+
       nextPosY = start_y - ((y_axis_height / y_units) * (u + 1));
     }
-    
+
     ctx.fill();
     ctx.stroke();
     ctx.closePath();
-    
+
   };
-  
+
   var convertToImg = function(canvas){
     var img = document.createElement('img');
     img.width = canvas.width;
@@ -401,22 +421,26 @@ function OPTICS(dataset){
     img.src = canvas.toDataURL();
     return img;
   };
-  
+
   var init = function(dataset){
-    
+
     if(dataset.constructor !== Array){
       console.log('dataset must be of type array: ', typeof dataset, dataset);
       return;
     }
-    
+
     for(var p = 0; p < dataset.length; p++){
-    
+
       var point = new Point();
+
+      // bei dieser gelegenheit könnte man prüfen, ob eh
+      // alle attribute numerisch sind, und die anderen gleich
+      // nicht reingeben.  das spart dann eine prüfung in der dist-funktion!
       point.attribute = dataset[p];
       point.id = dataset[p].id ? dataset[p].id : 'undefined';
-      
+
       unsorted_list.push(point);
     }
-    
+
   };
 }
