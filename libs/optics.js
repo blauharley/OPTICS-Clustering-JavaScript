@@ -288,6 +288,13 @@ function OPTICS(dataset){
   this.dist = dist; // MADE PUBLIC FOR TESTING!
   
 
+  // TODO: use a spatial index to reduce this function to O(log n)
+  // https://github.com/mikechambers/ExamplesByMesh/tree/master/JavaScript/QuadTree
+  // https://github.com/imbcmdth/RTree/tree/master/tests
+  // http://www.mikechambers.com/blog/2011/03/21/javascript-quadtree-implementation/
+
+  // TODO: inject distance function!
+
   var getNeighbors = function(point, epsilon){
     
     var neughbors = [];
