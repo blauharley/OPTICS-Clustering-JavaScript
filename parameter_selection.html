@@ -1,0 +1,203 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Visual Spec</title>
+
+  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.3.1/jasmine.css">
+
+  <script type="text/javascript" src="libs/optics.js"></script>
+</head>
+<body>
+
+  <h1>OPTICS</h1>
+
+  <form>
+     <label>Epsilon: <input type="range" value="0" min="0" max="50" id="epsilon_input" onChange="redisplay()">
+     <span id="epsilon_output">0</span></label>
+     <label>minPts: <input type="range" value="0" min="0" max="20" id="minPts_input" onChange="redisplay()">
+     <span id="minPts_output">0</span></label>
+     <button onClick="redisplay(); return false;">rechnen</button>
+  </form>
+  <div id="results"></div>
+
+  <script type="text/javascript">
+    var max_epsilon = 50;
+    var max_minPts = 20;
+    var cache = [];
+
+    function addAlpha( hex ) {
+      if ( result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex) ) {
+        return "rgba(" + 
+               parseInt(result[1], 16) + "," +
+               parseInt(result[2], 16) + "," +
+               parseInt(result[3], 16) + ", 0.1)";
+      } else {
+        return "rgba(255,255,255,0.5);"
+      }
+    }
+
+    function drawInput(dataset,width,height){
+      var canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      var ctx = canvas.getContext ('2d');
+
+      dataset.forEach(function(point,index){
+        ctx.fillRect(point.x,point.y,1,1);
+      });
+      for(var x=0; x<max_epsilon; x++)  {
+        for(var y=0; y<max_minPts; y++)  {
+          if( cache[x] && cache[x][y] ) {
+            ctx.fillRect(x,y,1,1);
+          }
+        }
+      }
+      var img = document.createElement('img');
+      img.width = width;
+      img.height = height;
+      img.src = canvas.toDataURL();
+      return img
+    }
+
+    function drawOutput(dataset,width,height, epsilon){
+      var canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      var ctx = canvas.getContext ('2d');
+
+
+      if(true){ // epsilon-discs
+        ctx.beginPath();
+        ctx.moveTo(dataset[0].attribute.x, dataset[0].attribute.y);
+        dataset.forEach(function(point,index){
+          if( point.reachability_distance < epsilon ) {
+            ctx.beginPath();
+            ctx.fillStyle = addAlpha(point.color);
+            ctx.arc(point.attribute.x,point.attribute.y,epsilon, 0, 2*Math.PI, false);
+            ctx.closePath();
+            ctx.fill();
+          }
+        });
+      }
+      if(false){ //draw line 
+        dataset.forEach(function(point,index){
+          if(index > 0) {
+            if( point.color == dataset[index-1].color ) {
+              ctx.lineTo(point.attribute.x, point.attribute.y);
+            } else {
+              ctx.closePath();
+              ctx.strokeStyle = dataset[index-1].color;
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(point.attribute.x, point.attribute.y);
+            }
+          }
+        });
+        ctx.closePath();
+        ctx.stroke();
+      }
+      if(true){ // draw point
+        dataset.forEach(function(point,index){
+          ctx.fillStyle = point.color;
+          ctx.fillRect(point.attribute.x,point.attribute.y,1,1);
+        });
+      }
+
+      var img = document.createElement('img');
+      img.width = width;
+      img.height = height;
+      img.src = canvas.toDataURL();
+      return img
+    }
+
+
+    function drawBarChart(dataset, epsilon, minPts, width, height){
+      var canvas = document.createElement('canvas');
+      canvas.height = height;
+      canvas.width = width;
+      var ctx = canvas.getContext ('2d');
+      var bar_width = width / dataset.length;
+
+      ctx.translate(0, height);
+      ctx.scale(1, -1);
+
+      var max_reachability=0;
+      dataset.forEach(function(point,index){
+        max_reachability =  point.reachability_distance > max_reachability ? point.reachability_distance : max_reachability;
+      });
+
+      var reachability_scale = 0.5 * height / max_reachability;
+
+      dataset.forEach(function(point,index){
+        ctx.beginPath();
+        ctx.fillStyle = point.color;
+        if( point.reachability_distance == undefined ) {
+          ctx.rect( index * bar_width, 0, bar_width-1, height );
+        }else {
+          ctx.rect( index * bar_width, 0, bar_width-1, point.reachability_distance *  reachability_scale );
+        }
+        ctx.closePath();
+        ctx.fill();
+      });
+      
+      var img = document.createElement('img');
+      img.width = width;
+      img.height = height;
+      img.src = canvas.toDataURL();
+      return img
+    };
+
+    var o, output, maxPts, i1, i2;
+    var input = [],
+        epsilon = 15, 
+        minPts = 4, 
+        width = 600, 
+        height = 300;
+
+    maxPts = 500;
+
+    input = [];
+
+    var no_around_anchor = 7;
+    var spread_around_anchor = 30;
+
+    for( var i=0; i<maxPts / no_around_anchor; i++ ) {
+      var anchor_x = spread_around_anchor + Math.random()*(width-2*spread_around_anchor);
+      var anchor_y = spread_around_anchor + Math.random()*(height-2*spread_around_anchor);
+      for( var j=0; j<no_around_anchor; j++ ) {
+        input.push({ id: "id" + i, x: anchor_x + Math.random()*spread_around_anchor, y: anchor_y + Math.random()*spread_around_anchor });
+      }
+    }
+    document.getElementById('results').appendChild(drawInput(input,width,height));
+
+
+    function redisplay() {
+      epsilon = document.getElementById("epsilon_input").value;
+      document.getElementById("epsilon_output").innerHTML = epsilon;
+      minPts = document.getElementById("minPts_input").value;
+      document.getElementById("minPts_output").innerHTML = minPts;
+      compute(epsilon, minPts);
+      display(input,cache[epsilon][minPts], epsilon);
+    }
+
+    function compute(epsilon, minPts) {
+      if( cache[epsilon] && cache[epsilon][minPts] ) {
+        // dont comput
+      } else {
+        if( ! cache[epsilon] ) cache[epsilon] = [];
+        var o = new OPTICS(input);
+        cache[epsilon][minPts] = o.start(epsilon, minPts);
+      }
+    }
+    function display(input, output, epsilon){
+      i1 = drawOutput(output, width, height, epsilon);
+      i2 = drawBarChart(output, epsilon, minPts, width*2, height)
+      document.getElementById('results').innerHTML = "";
+      document.getElementById('results').appendChild(drawInput(input,width,height));
+      document.getElementById('results').appendChild(i1);
+      document.getElementById('results').appendChild(i2);
+    }
+
+  </script>
+</body>
+</html>
