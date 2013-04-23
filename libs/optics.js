@@ -283,6 +283,7 @@ function OPTICS(dataset){
     
     return Math.sqrt(sum);
   };
+  this.dist = dist;  // make public for testing!
   
   var getNeighbors = function(point, epsilon){
     
