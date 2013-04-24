@@ -11,11 +11,11 @@ var countLowReachabilities = function(dataset){
   
   dataset.forEach(function(point,index){
     
-    if(point.reachability_distance < reachabilityThreshold){
+    if(point.reachabilityDistance < reachabilityThreshold){
       count += 2;
     }
     
-    if(!point.reachability_distance){
+    if(!point.reachabilityDistance){
       count++;
     }
     
@@ -32,9 +32,9 @@ var getPointWithLowestReachability = function(dataset,lowestReachability){
   
   dataset.forEach(function(point,index){
       
-    if( point.reachability_distance < low ){
-      low = point.reachability_distance;
-      lowestReachabilities.push(point.reachability_distance);
+    if( point.reachabilityDistance < low ){
+      low = point.reachabilityDistance;
+      lowestReachabilities.push(point.reachabilityDistance);
     }
     
   });
@@ -53,11 +53,11 @@ var countGradients = function(dataset){
   
   for(var p=0; p < dataset.length-1; p++){
     
-    if( dataset[p].reachability_distance < dataset[p+1].reachability_distance ){
+    if( dataset[p].reachabilityDistance < dataset[p+1].reachabilityDistance ){
       count += 2;
     }
     
-    if(!dataset[p].reachability_distance){
+    if(!dataset[p].reachabilityDistance){
       count *= 2;
     }
     

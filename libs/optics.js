@@ -2,10 +2,10 @@
 // a point is a unspecified data of a data-set
 function Point(){
   this.processed = false;
-  this.reachability_distance = undefined;
+  this.reachabilityDistance = undefined;
   this.attribute = null;
   this.id = null;
-  this.color = null    // missing semicolon!
+  this.color = null
 }
 
 
@@ -39,7 +39,7 @@ function Queue(){
     var indexToInsert = _queue.length;
     for(var index= _queue.length-1; index >= 0; index--){
       
-      if( ele.reachability_distance < _queue[index].reachability_distance ){
+      if( ele.reachabilityDistance < _queue[index].reachabilityDistance ){
         indexToInsert = index;
       }
       
@@ -64,10 +64,9 @@ function Queue(){
     }
     else{
       var currentElement = _queue[index];
-  
-      // achtung: keine klammern, gefahr von semicolon insertion!
+    
       if(_queue[index] === undefined)
-        return false;  // warum hier ein rückgabewert, und sonst nicht?
+        return false;
         
       _queue[index] = ele;
     
@@ -86,57 +85,58 @@ function Queue(){
 // dataset should lok like this: [ { id: 'identifier', a: Number, b: Number ... OR  x: Number, y: Number ... }, {...} ]
 function OPTICS(dataset){
   
-  var unsorted_list = null;
-  var sorted_list = null;
-  var priority_queue = null; 
-  var core_distance = 0;
+  var unsortedList = null;
+  var sortedList = null;
+  var priorityQueue = null; 
+  var coreDistance = 0;
   
-  var tmp_color_color = null;
+  var that = null;
+  var tmpColor = null;
   
   // public methods
   
   this.start = function(epsilon, minPts){ // actual OPTICS - clustering - Algo
     
-    unsorted_list = [];
+    unsortedList = [];
     
-    init(dataset);
+    init.call(this,dataset);
     
-    sorted_list = [];
+    sortedList = [];
         
-    unsorted_list.forEach(function(point,index){
+    unsortedList.forEach(function(point,index){
       
       if( !point.processed ){
         
         var neighbors = getNeighbors(point, epsilon);
         point.processed = true;
         
-        var cluster_color = getRandomColor(point.attribute, neighbors.length);
-        point.color = cluster_color;
+        var clusterColor = getRandomColor();
+        point.color = clusterColor;
           
-        sorted_list.push(point);
+        sortedList.push(point);
         
-        priority_queue = new Queue();
+        priorityQueue = new Queue();
         
         if( calculateCoreDistance(point, epsilon, minPts) !== undefined ){
           
-          updateQueue(neighbors, point, priority_queue, epsilon, minPts);
+          updateQueue(neighbors, point, priorityQueue, epsilon, minPts);
           
           var call = function(){
           
-            for(var p = 0; p < priority_queue.getElements().length; p++){
+            for(var p = 0; p < priorityQueue.getElements().length; p++){
               
-              var queued_point = priority_queue.getElements()[p];
+              var queuedPoint = priorityQueue.getElements()[p];
               
-              if( !queued_point.processed ){
+              if( !queuedPoint.processed ){
                 
-                var neighbors = getNeighbors(queued_point, epsilon);
-                queued_point.processed = true;
-                queued_point.color = cluster_color;
+                var neighbors = getNeighbors(point, epsilon);
+                queuedPoint.processed = true;
+                queuedPoint.color = clusterColor;
             
-                sorted_list.push(queued_point);
+                sortedList.push(queuedPoint);
                 
-                if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
-                  updateQueue(neighbors, queued_point, priority_queue, epsilon, minPts);
+                if( calculateCoreDistance(queuedPoint, epsilon, minPts) !== undefined ){
+                  updateQueue(neighbors, queuedPoint, priorityQueue, epsilon, minPts);
                   call();
                 }
                 
@@ -152,7 +152,7 @@ function OPTICS(dataset){
       
     });
     
-    return sorted_list;
+    return sortedList;
     
   };
   
@@ -195,8 +195,8 @@ function OPTICS(dataset){
       ctx.moveTo(xStartPoint, yStartPoint);
       ctx.strokeStyle = point.color;
       
-      if(point.reachability_distance)
-        ctx.lineTo(xStartPoint, (yStartPoint - (point.reachability_distance * (output.height/100))) );
+      if(point.reachabilityDistance)
+        ctx.lineTo(xStartPoint, (yStartPoint - (point.reachabilityDistance * (output.height/100))) );
       else
         ctx.lineTo(xStartPoint, 0);
       
@@ -267,62 +267,43 @@ function OPTICS(dataset){
     return visual;
   };
   
+  this.dist = function(pointA, pointB){ // pytharoras
+    return Math.sqrt((pointA.x - pointB.x) * (pointA.x - pointB.x) + (pointA.y - pointB.y) * (pointA.y - pointB.y));
+  };
   
   // private methods
-  var dist = function(pointA, pointB){ // pytharoras
-    
-    var multiplied_axises = [];
-    for(var axis in pointA){
-      if( !isNaN( Number(pointA[axis]) ) ) // axis must have got metric value in order to be processed
-        multiplied_axises.push( ((pointA[axis] - pointB[axis]) * (pointA[axis] - pointB[axis])) );
-    }
-    
-    var sum = 0;
-    multiplied_axises.forEach(function(val,index){
-      sum += val;
-    });
-    
-    return Math.sqrt(sum);
-  };
-
-  this.dist = dist; // MADE PUBLIC FOR TESTING!
   
-
-  // TODO: use a spatial index to reduce this function to O(log n)
-  // https://github.com/mikechambers/ExamplesByMesh/tree/master/JavaScript/QuadTree
-  // https://github.com/imbcmdth/RTree/tree/master/tests
-  // http://www.mikechambers.com/blog/2011/03/21/javascript-quadtree-implementation/
-
-  // TODO: inject distance function!
-
   var getNeighbors = function(point, epsilon){
     
     var neughbors = [];
-    unsorted_list.forEach(function(otherPoint,index){
-      if( point !== otherPoint && dist(point.attribute, otherPoint.attribute) < epsilon ){
+    
+    unsortedList.forEach(function(otherPoint,index){
+      if( point !== otherPoint && that.dist(point.attribute, otherPoint.attribute) < epsilon ){
         neughbors.push(otherPoint);
       }
     });
+    
     return neughbors;
     
   };
   
   var updateQueue = function(neighbors, point, queue, epsilon, minPts){
-    core_distance = calculateCoreDistance(point, epsilon, minPts);
+    
+    coreDistance = calculateCoreDistance.call(this, point, epsilon, minPts);
     
     neighbors.forEach(function(otherPoint,index){
       
       if(!otherPoint.processed){
   
-        var new_reachable_distance = Math.max(core_distance, dist(point.attribute, otherPoint.attribute) );
+        var newReachableDistance = Math.max(coreDistance, that.dist(point.attribute, otherPoint.attribute) );
         
-        if(otherPoint.reachability_distance === undefined){
-          otherPoint.reachability_distance = new_reachable_distance;
+        if(otherPoint.reachabilityDistance === undefined){
+          otherPoint.reachabilityDistance = newReachableDistance;
           queue.insert(otherPoint);
         }
         else{
-          if( new_reachable_distance < otherPoint.reachability_distance){
-            otherPoint.reachability_distance = new_reachable_distance;
+          if( newReachableDistance < otherPoint.reachabilityDistance){
+            otherPoint.reachabilityDistance = newReachableDistance;
             queue.remove({ id: otherPoint.id });
             queue.insert(otherPoint);
           }
@@ -334,93 +315,82 @@ function OPTICS(dataset){
   };
   
   var calculateCoreDistance = function(point, epsilon, minPts){
-    var neighbors = getNeighbors(point,epsilon);
-    var min_distance = undefined;
-    if( neighbors.length >= minPts ){ // core-point should have got at least minPts-Points
+    
+    var neighbors = getNeighbors.call(this, point, epsilon);
+    var minDistance = undefined;
+    // core-point should have got at least minPts-Points
+    if( neighbors.length >= minPts ){ 
       
-      var tmp_distance = epsilon;
+      var minDistance = epsilon;
+      
       neighbors.forEach(function(otherPoint,index){
-        if( dist(point.attribute, otherPoint.attribute) < tmp_distance )
-          tmp_distance = dist(point.attribute, otherPoint.attribute);
+        if( that.dist(point.attribute, otherPoint.attribute) < minDistance ){
+          minDistance = that.dist(point.attribute, otherPoint.attribute);
+        }
       });
-      min_distance = tmp_distance;
+      
+      minDistance = minDistance;
       
     }
-    return min_distance;
+    return minDistance;
+    
   };
-
-  String.prototype.hashCode = function(){
-    var hash = 0, i, char;
-    if (this.length == 0) return hash;
-    for (i = 0; i < this.length; i++) {
-      char = this.charCodeAt(i);
-      hash = ((hash<<5)-hash)+char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash;
-  };
-
-  var getRandomColor = function(point,no){
-    var tmp = "";
-    for(var axis in point){
-      if( !isNaN( Number(point[axis]) ) ) tmp += point[axis];
-    }
-    tmp += no;
-    return "#"+tmp.hashCode().toString(16).substr(-6);
-
+  
+  var getRandomColor = function(){
+    
     var color = '#' + Math.floor(Math.random() * 255).toString(16) + Math.floor(Math.random() * 255).toString(16) + Math.floor(Math.random() * 255).toString(16);
-    if( color.length === 7 && tmp_color_color !== color ){
-
-      tmp_color_color = color;
+    if( color.length === 7 && tmpColor !== color ){
+    
+      tmpColor = color;
       return color;
     }
     else
       return getRandomColor();
-
+      
   };
-
+  
   var drawAxes = function(ctx, start_x, start_y, x_axis_width, y_axis_height, x_units, y_units){
-
+    
     ctx.beginPath();
     ctx.lineWidth = 3;
     ctx.fillStyle = '#000000';
     ctx.strokeStyle = '#000000';
-
+    
     ctx.moveTo(start_x, start_y);
     ctx.lineTo( start_x + x_axis_width, start_y);
-
+    
     var nextPosX = start_x;
-
+    
     for(var u=0; u < x_units; u++){
-
+      
       ctx.moveTo(nextPosX, start_y + 5);
       ctx.lineTo(nextPosX, start_y - 5 );
       ctx.fillText( u.toString(), nextPosX-3, (start_y + 10));
-
+      
       nextPosX = start_x + (10 * (u + 1));
     }
-
-
+    
+    
     ctx.moveTo(start_x, start_y);
     ctx.lineTo(start_x, 0);
-
+    
     var nextPosY = start_y;
-
+    
     for(var u=0; u < y_units; u++){
-
+      
       ctx.moveTo(start_x - 5, nextPosY);
       ctx.lineTo(start_x + 5, nextPosY);
       ctx.fillText( u.toString(), start_x-15, nextPosY );
-
+      
       nextPosY = start_y - ((y_axis_height / y_units) * (u + 1));
     }
-
+    
     ctx.fill();
     ctx.stroke();
     ctx.closePath();
-
+    
   };
-
+  
   var convertToImg = function(canvas){
     var img = document.createElement('img');
     img.width = canvas.width;
@@ -428,26 +398,24 @@ function OPTICS(dataset){
     img.src = canvas.toDataURL();
     return img;
   };
-
+  
   var init = function(dataset){
-
-    if(dataset.constructor !== Array){
+    
+    that = this;
+    
+    if(dataset.__proto__.constructor !== Array){
       console.log('dataset must be of type array: ', typeof dataset, dataset);
       return;
     }
-
+    
     for(var p = 0; p < dataset.length; p++){
-
+    
       var point = new Point();
-
-      // bei dieser gelegenheit könnte man prüfen, ob eh
-      // alle attribute numerisch sind, und die anderen gleich
-      // nicht reingeben.  das spart dann eine prüfung in der dist-funktion!
-      point.attribute = dataset[p];
+      point.attribute = { x : dataset[p].x, y : dataset[p].y };
       point.id = dataset[p].id ? dataset[p].id : 'undefined';
-
-      unsorted_list.push(point);
+      
+      unsortedList.push(point);
     }
-
+    
   };
 }

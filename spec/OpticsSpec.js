@@ -6,7 +6,7 @@ describe("Optics", function() {
     it("should have default values after creation", function(){
       p = new Point();
       expect(p.processed).toBe(false);
-      expect(p.reachability_distance).toBeUndefined();
+      expect(p.reachabilityDistance).toBeUndefined();
       expect(p.attribute).toBeNull();
       expect(p.id).toBeNull();
       expect(p.color).toBeNull();
@@ -26,9 +26,9 @@ describe("Optics", function() {
       p1.id = 1;
       p2.id = 2;
       p3.id = 3;
-      p1.reachability_distance = 1;
-      p2.reachability_distance = 2;
-      p3.reachability_distance = 3;
+      p1.reachabilityDistance = 1;
+      p2.reachabilityDistance = 2;
+      p3.reachabilityDistance = 3;
     });
 
     it("should be empty after creation", function() {
@@ -42,7 +42,7 @@ describe("Optics", function() {
       expect(q.getElements()[0]).toEqual( p1 );
     });
 
-    it("should insert point with smaller reachability_distance in the front", function() {
+    it("should insert point with smaller reachabilityDistance in the front", function() {
       q.insert(p2);
       q.insert(p1);
       expect(q.getElements().length).toEqual(2);
@@ -50,7 +50,7 @@ describe("Optics", function() {
       expect(q.getElements()[1]).toEqual( p2 );
     });
 
-    it("should insert point with higher reachability_distance in the back", function() {
+    it("should insert point with higher reachabilityDistance in the back", function() {
       q.insert(p1);
       q.insert(p2);
       expect(q.getElements().length).toEqual(2);
@@ -58,7 +58,7 @@ describe("Optics", function() {
       expect(q.getElements()[1]).toEqual( p2 );
     });
 
-    it("should insert point with middle reachability_distance in the middle", function() {
+    it("should insert point with middle reachabilityDistance in the middle", function() {
       q.insert(p1);
       q.insert(p3);
       q.insert(p2);
@@ -72,7 +72,7 @@ describe("Optics", function() {
   describe("OPTICS", function() {
     var dataset, o;
     beforeEach(function() {
-      dataset = [  { id: "eins", x: 1 }, { id: "zwei", x : 100 }]
+      dataset = [  { id: "eins", x: 1, y:0 }, { id: "zwei", x : 100, y:0 }]
       o = new OPTICS( dataset );
     });
 
@@ -90,16 +90,16 @@ describe("Optics", function() {
       // distance = 99, epsilon = 2 --> two clusters
       var result = o.start(2, 1);
       expect(result.length).toEqual(2);
-      expect(result[0].reachability_distance).toBeUndefined();
-      expect(result[1].reachability_distance).toBeUndefined();
+      expect(result[0].reachabilityDistance).toBeUndefined();
+      expect(result[1].reachabilityDistance).toBeUndefined();
     });
 
     it("should find separate clusters if minPoints is too large", function() {
       // only two points in dataset, minPoints = 3 --> two clusters
       var result = o.start(200, 3);
       expect(result.length).toEqual(2);
-      expect(result[0].reachability_distance).toBeUndefined();
-      expect(result[1].reachability_distance).toBeUndefined();
+      expect(result[0].reachabilityDistance).toBeUndefined();
+      expect(result[1].reachabilityDistance).toBeUndefined();
     });
 
     it("should find one cluster with right parameters", function() {
@@ -107,8 +107,9 @@ describe("Optics", function() {
       // only two points in dataset, minPoints = 1 --> ok
       var result = o.start(100, 1);
       expect(result.length).toEqual(2);
-      expect(result[0].reachability_distance).toBeUndefined();
-      expect(result[1].reachability_distance).toBe(99);
+      console.log('result:',result)
+      expect(result[0].reachabilityDistance).toBeUndefined();
+      expect(result[1].reachabilityDistance).toBe(99);
       expect(result[1].color).toBe(result[0].color);
     });
 

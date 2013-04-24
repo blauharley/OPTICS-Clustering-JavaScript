@@ -70,7 +70,7 @@
         ctx.beginPath();
         ctx.moveTo(dataset[0].attribute.x, dataset[0].attribute.y);
         dataset.forEach(function(point,index){
-          if( point.reachability_distance < epsilon ) {
+          if( point.reachabilityDistance < epsilon ) {
             ctx.beginPath();
             ctx.fillStyle = addAlpha(point.color);
             ctx.arc(point.attribute.x,point.attribute.y,epsilon, 0, 2*Math.PI, false);
@@ -123,7 +123,7 @@
 
       var max_reachability=0;
       dataset.forEach(function(point,index){
-        max_reachability =  point.reachability_distance > max_reachability ? point.reachability_distance : max_reachability;
+        max_reachability =  point.reachabilityDistance > max_reachability ? point.reachabilityDistance : max_reachability;
       });
 
       var reachability_scale = 0.5 * height / max_reachability;
@@ -131,10 +131,10 @@
       dataset.forEach(function(point,index){
         ctx.beginPath();
         ctx.fillStyle = point.color;
-        if( point.reachability_distance == undefined ) {
+        if( point.reachabilityDistance == undefined ) {
           ctx.rect( index * bar_width, 0, bar_width-1, height );
         }else {
-          ctx.rect( index * bar_width, 0, bar_width-1, point.reachability_distance *  reachability_scale );
+          ctx.rect( index * bar_width, 0, bar_width-1, point.reachabilityDistance *  reachability_scale );
         }
         ctx.closePath();
         ctx.fill();
