@@ -1,7 +1,7 @@
 ﻿// main-webworker that coordinates epsilon-steps of each sub-webworker
 // there are several sub-webworker that get start and end epsilon values from the main-webworker
 
-importScripts('help_methods/calculateMaxEpsilon.js','help_methods/getBestResult.js');
+importScripts('help_methods/calculateMaxEpsilon.js','help_methods/getBestResult.js', 'optics.js');
 
 // calulated optimal parameters(epsilon,minPts) by sub-webworker
 var calulatedOptimalParameters = [];
@@ -15,7 +15,8 @@ onmessage = function(event){
   var startMinPts = event.data.startMinPts;
   var endMinPts = event.data.endMinPts;
   
-  var maxEplisonDistance = calculateMaxEpsilon(dataset);
+  var usedDist = new OPTICS(event.data.dataset).dist; 
+  var maxEplisonDistance = calculateMaxEpsilon(dataset,usedDist);
   var maxAllowedEplisonDistance = (maxEplisonDistance/10) + (maxEplisonDistance/100); // this number is the threshold of all sub-webworker, (maxEplisonDistance/100) compensate start-value
   
   var subWorkerStep = maxAllowedEplisonDistance/10;

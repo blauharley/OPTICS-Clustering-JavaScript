@@ -289,7 +289,7 @@ function OPTICS(dataset){
   
   var updateQueue = function(neighbors, point, queue, epsilon, minPts){
     
-    coreDistance = calculateCoreDistance.call(this, point, epsilon, minPts);
+    coreDistance = calculateCoreDistance(point, epsilon, minPts);
     
     neighbors.forEach(function(otherPoint,index){
       
@@ -316,7 +316,7 @@ function OPTICS(dataset){
   
   var calculateCoreDistance = function(point, epsilon, minPts){
     
-    var neighbors = getNeighbors.call(this, point, epsilon);
+    var neighbors = getNeighbors(point, epsilon);
     var minDistance = undefined;
     // core-point should have got at least minPts-Points
     if( neighbors.length >= minPts ){ 
@@ -328,8 +328,6 @@ function OPTICS(dataset){
           minDistance = that.dist(point.attribute, otherPoint.attribute);
         }
       });
-      
-      minDistance = minDistance;
       
     }
     return minDistance;
@@ -412,7 +410,7 @@ function OPTICS(dataset){
     
       var point = new Point();
       point.attribute = { x : dataset[p].x, y : dataset[p].y };
-      point.id = dataset[p].id ? dataset[p].id : 'undefined';
+      point.id = dataset[p].id ? dataset[p].id : ('undefined:' + Math.random()*10);
       
       unsortedList.push(point);
     }
