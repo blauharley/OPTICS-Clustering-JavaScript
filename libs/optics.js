@@ -110,8 +110,8 @@ function OPTICS(dataset){
         var neighbors = getNeighbors(point, epsilon);
         point.processed = true;
         
-        var clusterColor = getRandomColor();
-        point.color = clusterColor;
+        var cluster_color = getRandomColor();
+        point.color = cluster_color;
           
         sortedList.push(point);
         
@@ -125,18 +125,18 @@ function OPTICS(dataset){
           
             for(var p = 0; p < priorityQueue.getElements().length; p++){
               
-              var queuedPoint = priorityQueue.getElements()[p];
+              var queued_point = priorityQueue.getElements()[p];
               
-              if( !queuedPoint.processed ){
+              if( !queued_point.processed ){
                 
-                var neighbors = getNeighbors(point, epsilon);
-                queuedPoint.processed = true;
-                queuedPoint.color = clusterColor;
+                var neighbors = getNeighbors(queued_point, epsilon);
+                queued_point.processed = true;
+                queued_point.color = cluster_color;
             
-                sortedList.push(queuedPoint);
+                sortedList.push(queued_point);
                 
-                if( calculateCoreDistance(queuedPoint, epsilon, minPts) !== undefined ){
-                  updateQueue(neighbors, queuedPoint, priorityQueue, epsilon, minPts);
+                if( calculateCoreDistance(queued_point, epsilon, minPts) !== undefined ){
+                  updateQueue(neighbors, queued_point, priorityQueue, epsilon, minPts);
                   call();
                 }
                 
@@ -267,43 +267,41 @@ function OPTICS(dataset){
     return visual;
   };
   
+  // private methods
+  
   this.dist = function(pointA, pointB){ // pytharoras
     return Math.sqrt((pointA.x - pointB.x) * (pointA.x - pointB.x) + (pointA.y - pointB.y) * (pointA.y - pointB.y));
   };
   
-  // private methods
-  
   var getNeighbors = function(point, epsilon){
     
     var neughbors = [];
-    
     unsortedList.forEach(function(otherPoint,index){
       if( point !== otherPoint && that.dist(point.attribute, otherPoint.attribute) < epsilon ){
         neughbors.push(otherPoint);
       }
     });
-    
     return neughbors;
     
   };
   
   var updateQueue = function(neighbors, point, queue, epsilon, minPts){
-    
+  
     coreDistance = calculateCoreDistance(point, epsilon, minPts);
     
     neighbors.forEach(function(otherPoint,index){
       
       if(!otherPoint.processed){
   
-        var newReachableDistance = Math.max(coreDistance, that.dist(point.attribute, otherPoint.attribute) );
+        var new_reachable_distance = Math.max(coreDistance, that.dist(point.attribute, otherPoint.attribute) );
         
         if(otherPoint.reachabilityDistance === undefined){
-          otherPoint.reachabilityDistance = newReachableDistance;
+          otherPoint.reachabilityDistance = new_reachable_distance;
           queue.insert(otherPoint);
         }
         else{
-          if( newReachableDistance < otherPoint.reachabilityDistance){
-            otherPoint.reachabilityDistance = newReachableDistance;
+          if( new_reachable_distance < otherPoint.reachabilityDistance){
+            otherPoint.reachabilityDistance = new_reachable_distance;
             queue.remove({ id: otherPoint.id });
             queue.insert(otherPoint);
           }
@@ -401,7 +399,7 @@ function OPTICS(dataset){
     
     that = this;
     
-    if(dataset.__proto__.constructor !== Array){
+    if(dataset.constructor !== Array){
       console.log('dataset must be of type array: ', typeof dataset, dataset);
       return;
     }
@@ -409,8 +407,8 @@ function OPTICS(dataset){
     for(var p = 0; p < dataset.length; p++){
     
       var point = new Point();
-      point.attribute = { x : dataset[p].x, y : dataset[p].y };
-      point.id = dataset[p].id ? dataset[p].id : ('undefined:' + Math.random()*10);
+      point.attribute = { x: dataset[p].x, y: dataset[p].y };
+      point.id = dataset[p].id ? dataset[p].id : 'undefined';
       
       unsortedList.push(point);
     }
