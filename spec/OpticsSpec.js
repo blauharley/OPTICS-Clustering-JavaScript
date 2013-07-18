@@ -36,7 +36,7 @@ describe("Optics", function() {
       expect(q.getElements()).toEqual([]);
     });
 
-    it("should have one element afeter inserting 1", function() {
+    it("should have one element after inserting 1", function() {
       q.insert(p1);
       expect(q.getElements().length).toEqual(1);
       expect(q.getElements()[0]).toEqual( p1 );
@@ -72,7 +72,7 @@ describe("Optics", function() {
   describe("OPTICS", function() {
     var dataset, o;
     beforeEach(function() {
-      dataset = [  { id: "eins", x: 1, y:0 }, { id: "zwei", x : 100, y:0 }]
+      dataset = [  { id: "eins", x: 1, y:0 }, { id: "zwei", x : 100, y:0 }];
       o = new OPTICS( dataset );
     });
 
